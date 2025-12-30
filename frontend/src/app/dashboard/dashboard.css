@@ -1,0 +1,54 @@
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #0f172a; /* biru dongker */
+  color: white;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 10px 0;
+}
+
+.sidebar li a {
+  color: #cbd5e1;
+  text-decoration: none;
+  display: block;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.sidebar li.active a,
+.sidebar li a:hover {
+  background-color: #1e293b;
+  color: #fff;
+}
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  background-color: #f1f5f9; /* abu terang */
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #0f172a;
+}

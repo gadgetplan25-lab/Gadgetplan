@@ -1,0 +1,360 @@
+@import "tailwindcss";
+
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
+/* ============================================
+   RESPONSIVE DESIGN SYSTEM - 2024-2025
+   Based on Tailwind CSS, Apple.com, Material Design
+   ============================================ */
+
+:root {
+  /* ==========================================
+     FLUID TYPOGRAPHY SCALE
+     Uses clamp() for smooth scaling
+     ========================================== */
+
+  /* Text Sizes - Mobile to Desktop */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  /* 12px - 14px */
+  --text-sm: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+  /* 14px - 16px */
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  /* 16px - 18px */
+  --text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+  /* 18px - 20px */
+  --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  /* 20px - 24px */
+  --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  /* 24px - 30px */
+  --text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
+  /* 30px - 36px */
+  --text-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);
+  /* 36px - 48px */
+  --text-5xl: clamp(3rem, 2.55rem + 2.25vw, 3.75rem);
+  /* 48px - 60px */
+  --text-6xl: clamp(3.75rem, 3.15rem + 3vw, 4.5rem);
+  /* 60px - 72px */
+  --text-7xl: clamp(4.5rem, 3.75rem + 3.75vw, 6rem);
+  /* 72px - 96px */
+
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+
+  /* ==========================================
+     RESPONSIVE SPACING SYSTEM
+     Breakpoints: 320px, 640px, 768px, 1024px, 1280px, 1536px
+     ========================================== */
+
+  /* Container Padding - Default (Mobile) */
+  --container-padding: 16px;
+
+  /* Section Spacing */
+  --section-spacing: 48px;
+
+  /* Component Gaps */
+  --gap-xs: 8px;
+  --gap-sm: 12px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+  --gap-2xl: 48px;
+
+  /* Touch Target Minimum (Mobile UX) */
+  --touch-target-min: 48px;
+}
+
+/* ==========================================
+   RESPONSIVE BREAKPOINTS
+   Mobile-first approach
+   ========================================== */
+
+/* Small Mobile Landscape (640px+) */
+@media (min-width: 640px) {
+  :root {
+    --container-padding: 24px;
+  }
+}
+
+/* Tablet Portrait (768px+) */
+@media (min-width: 768px) {
+  :root {
+    --container-padding: 48px;
+    --section-spacing: 64px;
+  }
+}
+
+/* Tablet Landscape / Small Desktop (1024px+) */
+@media (min-width: 1024px) {
+  :root {
+    --container-padding: 64px;
+    --section-spacing: 96px;
+  }
+}
+
+/* Desktop (1280px+) */
+@media (min-width: 1280px) {
+  :root {
+    --container-padding: 80px;
+  }
+}
+
+/* Large Desktop (1536px+) */
+@media (min-width: 1536px) {
+  :root {
+    --container-padding: 120px;
+  }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+@layer utilities {
+
+  /* Container with responsive padding */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+  /* Fluid Typography Utilities */
+  .text-fluid-xs {
+    font-size: var(--text-xs);
+  }
+
+  .text-fluid-sm {
+    font-size: var(--text-sm);
+  }
+
+  .text-fluid-base {
+    font-size: var(--text-base);
+  }
+
+  .text-fluid-lg {
+    font-size: var(--text-lg);
+  }
+
+  .text-fluid-xl {
+    font-size: var(--text-xl);
+  }
+
+  .text-fluid-2xl {
+    font-size: var(--text-2xl);
+  }
+
+  .text-fluid-3xl {
+    font-size: var(--text-3xl);
+  }
+
+  .text-fluid-4xl {
+    font-size: var(--text-4xl);
+  }
+
+  .text-fluid-5xl {
+    font-size: var(--text-5xl);
+  }
+
+  .text-fluid-6xl {
+    font-size: var(--text-6xl);
+  }
+
+  .text-fluid-7xl {
+    font-size: var(--text-7xl);
+  }
+
+  /* Touch Target Minimum */
+  .touch-target {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  /* Section Spacing */
+  .section-spacing {
+    padding-top: var(--section-spacing);
+    padding-bottom: var(--section-spacing);
+  }
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes leftIn {
+  from {
+    transform: translateX(-60vw);
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rightIn {
+  from {
+    transform: translateX(60vw);
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-leftIn {
+  animation: leftIn 2s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.animate-rightIn {
+  animation: rightIn 2s cubic-bezier(.2, .8, .2, 1) both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* ==========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ========================================== */
+
+/* Reduced Motion Support - Respects user preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Enhanced Focus Styles for Keyboard Navigation */
+.focus-visible:focus,
+*:focus-visible {
+  outline: 2px solid #002B50;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #002B50;
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #002B50;
+  outline-offset: 0;
+  border-color: #002B50;
+  box-shadow: 0 0 0 3px rgba(0, 43, 80, 0.1);
+}
+
+/* Skip Navigation Link */
+.skip-nav {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #002B50;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 100;
+  font-weight: 600;
+}
+
+.skip-nav:focus {
+  top: 0;
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
