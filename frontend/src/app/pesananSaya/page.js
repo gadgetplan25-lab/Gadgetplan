@@ -1,5 +1,4 @@
-"use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Navbar from "@/components/navbar";
@@ -75,7 +74,7 @@ const getStatusClassName = (status) => {
   return styles[status] || "bg-slate-100 text-slate-600";
 }
 
-export default function PesananSayaPage() {
+function PesananSayaContent() {
   const searchParams = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -432,3 +431,16 @@ export default function PesananSayaPage() {
     </>
   );
 }
+
+export default function PesananSayaPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1A3558]"></div>
+      </div>
+    }>
+      <PesananSayaContent />
+    </Suspense>
+  );
+}
+

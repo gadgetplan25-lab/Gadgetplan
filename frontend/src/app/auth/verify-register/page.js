@@ -115,13 +115,13 @@
 // }
 
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Swal from "sweetalert2";
 import LoadingAnimation from "@/components/loadingAnimation";
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -237,3 +237,16 @@ export default function VerifyOtpPage() {
     </main>
   );
 }
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-[#002B50]">
+        <LoadingAnimation />
+      </div>
+    }>
+      <VerifyOtpContent />
+    </Suspense>
+  );
+}
+
