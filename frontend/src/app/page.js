@@ -1,39 +1,41 @@
-"use client";
 import Link from "next/link";
 import { FaShoppingCart, FaWrench, FaWhatsapp } from "react-icons/fa";
-import { useState, useEffect } from "react";
-import { apiFetch } from "@/lib/api";
 
-// ALL STATIC IMPORTS - NO DYNAMIC LOADING FOR MAXIMUM SPEED
+// Server Components - NO client-side JavaScript
 import Navbar from "@/components/navbar";
 import ProductCard from "@/components/productCard";
 import PopularServices from "@/components/PopularServices";
 import Footer from "@/components/footer";
-import SkeletonCard from "@/components/SkeletonCard";
 
-export default function HomePage() {
-  const [products, setProducts] = useState([]);
-  const [productsLoading, setProductsLoading] = useState(true);
+// Server-side data fetching
+async function getProducts() {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    const res = await fetch(`${apiUrl}/api/user/products`, {
+      next: { revalidate: 60 }, // ISR: Revalidate every 60 seconds
+      cache: 'force-cache'
+    });
 
-  useEffect(() => {
-    setProductsLoading(true);
-    apiFetch("/user/products")
-      .then(data => {
-        setProducts(data.products || []);
-        setProductsLoading(false);
-      })
-      .catch(err => {
-        console.error("❌ Gagal fetch products:", err);
-        setProducts([]);
-        setProductsLoading(false);
-      });
-  }, []);
+    if (!res.ok) {
+      return [];
+    }
+
+    const data = await res.json();
+    return data.products || [];
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  // Fetch products on server - NO client-side loading
+  const products = await getProducts();
 
   return (
     <>
       <Navbar />
       <main className="flex flex-col gap-12 sm:gap-16 md:gap-24 pb-12 sm:pb-16 pt-4 sm:pt-6 md:pt-12" role="main">
-
 
         {/* Hero Section */}
         <section className="container mx-auto px-4">
@@ -81,13 +83,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Responsive Grid Layout - Better UX */}
+          {/* Products - Server-rendered, no loading state needed */}
           <div className="w-full">
-            {productsLoading ? (
-              <SkeletonCard count={12} />
-            ) : (
-              <ProductCard products={products.slice(0, 12)} />
-            )}
+            <ProductCard products={products.slice(0, 12)} />
           </div>
         </section>
 
@@ -128,3 +126,6 @@ export default function HomePage() {
     </>
   );
 }
+
+// Enable ISR
+export const revalidate = 60; // Revalidate every 60 seconds
