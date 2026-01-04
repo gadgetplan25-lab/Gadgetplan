@@ -12,7 +12,7 @@ export default function ProductCard({ products = [] }) {
     <section aria-label="Product list">
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         {products.length > 0 ? (
-          products.map((product) => (
+          products.map((product, index) => (
             <article
               key={product.id}
               onClick={() => router.push(`/detailProduct/${product.id}`)}
@@ -30,7 +30,8 @@ export default function ProductCard({ products = [] }) {
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                     className="object-contain"
-                    loading="lazy"
+                    loading={index < 4 ? "eager" : "lazy"}
+                    priority={index < 4}
                     quality={85}
                   />
                 ) : (

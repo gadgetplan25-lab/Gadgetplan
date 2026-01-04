@@ -2,11 +2,16 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { FaShoppingCart, FaTimes, FaHeart } from "react-icons/fa";
 import clsx from "clsx";
 import { apiFetch } from "@/lib/api";
 import { clearAllCookies } from "@/lib/cookieUtils";
-import UserMenu from "@/components/userMenu/UserMenu";
+
+// Lazy load UserMenu for better performance
+const UserMenu = dynamic(() => import("@/components/userMenu/UserMenu"), {
+  ssr: false,
+});
 
 const Navbar = ({ searchQuery, setSearchQuery }) => {
   const router = useRouter();

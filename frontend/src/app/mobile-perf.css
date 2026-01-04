@@ -1,0 +1,28 @@
+/* ==========================================
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+/* GPU Acceleration for animations */
+.animate-leftIn,
+.animate-rightIn,
+.animate-fade-in,
+.animate-slide-in {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Reduce paint on scroll */
+@media (max-width: 768px) {
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Disable expensive effects on mobile */
+    .hover\:shadow-lg:hover,
+    .hover\:-translate-y-0\.5:hover {
+        box-shadow: none !important;
+        transform: none !important;
+    }
+}

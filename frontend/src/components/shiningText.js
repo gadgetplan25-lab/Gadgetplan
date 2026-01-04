@@ -28,9 +28,26 @@
 // }
 
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const ShiningText = ({ text, className = "", duration = 3 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect mobile on mount
+    setIsMobile(window.innerWidth < 768);
+  }, []);
+
+  // On mobile, no animation for better performance
+  if (isMobile) {
+    return (
+      <span className={`text-[#002B50] ${className || ''}`}>
+        {text}
+      </span>
+    );
+  }
+
+  // On desktop, show shining animation
   return (
     <span
       className={`bg-[linear-gradient(110deg,#002B50,35%,#FDFEFF,50%,#002B50,75%,#002B50)] bg-[length:200%_100%] bg-clip-text text-base font-regular text-transparent ${className || ''}`}
@@ -38,12 +55,7 @@ const ShiningText = ({ text, className = "", duration = 3 }) => {
         backgroundSize: "200% auto",
         animation: `shine ${duration}s linear infinite`,
       }}
-      transition={{
-        repeat: Infinity,
-        duration: duration,
-        ease: "linear",
-      }}
-    > 
+    >
       {text}
       <style jsx>{`
         @keyframes shine {
