@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - GadgetPlan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #002B50 0%, #004a8f 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+    button {
+      background: white;
+      color: #002B50;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📡</h1>
+    <h2>Tidak Ada Koneksi Internet</h2>
+    <p>Sepertinya Anda sedang offline. Periksa koneksi internet Anda dan coba lagi.</p>
+    <button onclick="window.location.reload()">Coba Lagi</button>
+  </div>
+</body>
+</html>

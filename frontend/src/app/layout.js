@@ -118,6 +118,10 @@ export default function RootLayout({ children }) {
         {/* Preload critical assets */}
         <link rel="preload" as="image" href="/logo-gadgetplan-biru.png" fetchPriority="high" />
 
+        {/* Preconnect to Google Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
         {/* Viewport optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
 
@@ -135,6 +139,18 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         {children}
+
+        {/* Service Worker Registration */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[SW] Registered:', reg.scope))
+                .catch(err => console.log('[SW] Registration failed:', err));
+            });
+          }
+        `}} />
       </body>
     </html>
   );

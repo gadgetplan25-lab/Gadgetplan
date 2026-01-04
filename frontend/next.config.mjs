@@ -70,6 +70,8 @@ const nextConfig = {
     experimental: {
         optimizePackageImports: ['sweetalert2', 'swiper', 'recharts', 'lucide-react', 'react-icons'],
         optimizeCss: true,
+        // Reduce client-side JavaScript
+        optimizeServerReact: true,
     },
 
     // Strict mode for better performance
@@ -93,6 +95,12 @@ const nextConfig = {
         maxInactiveAge: 25 * 1000,
         pagesBufferLength: 2,
     },
+
+    // Production-only optimizations
+    ...(process.env.NODE_ENV === 'production' && {
+        productionBrowserSourceMaps: false,
+        generateEtags: true,
+    }),
 };
 
 export default nextConfig;
