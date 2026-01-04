@@ -14,6 +14,7 @@ const cookieParser = require("cookie-parser");
 
 const { generalLimiter, authLimiter, otpLimiter, checkoutLimiter, uploadLimiter, webhookLimiter } = require('./middleware/rateLimiter');
 
+const healthRoutes = require("./routes/healthRoutes");
 const authRoutes = require("./routes/authroutes");
 const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -116,6 +117,9 @@ if (process.env.NODE_ENV === 'development') {
     next();
   });
 }
+
+// Health check routes (no rate limit, no auth)
+app.use("/api", healthRoutes);
 
 // Apply auth rate limiting to auth routes
 app.use("/api/auth", authLimiter, authRoutes);
