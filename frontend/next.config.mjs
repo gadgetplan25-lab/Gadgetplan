@@ -22,27 +22,29 @@ const nextConfig = {
 
         // Allow images from these domains
         remotePatterns: [
+            // Development
             {
                 protocol: 'http',
                 hostname: 'localhost',
-                port: '4000',
-                pathname: '/uploads/**',
+                port: '8080',
+                pathname: '/public/**',
             },
             {
                 protocol: 'http',
                 hostname: 'localhost',
-                port: '4000',
+                port: '8080',
+                pathname: '/uploads/**',
+            },
+            // Production
+            {
+                protocol: 'https',
+                hostname: 'api.gadgetplan.id',
                 pathname: '/public/**',
             },
             {
                 protocol: 'https',
-                hostname: '*.ngrok-free.dev',
+                hostname: 'api.gadgetplan.id',
                 pathname: '/uploads/**',
-            },
-            {
-                protocol: 'https',
-                hostname: '*.ngrok-free.dev',
-                pathname: '/public/**',
             },
         ],
 
