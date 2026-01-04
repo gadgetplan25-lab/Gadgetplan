@@ -82,9 +82,7 @@ const nextConfig = {
         'react-icons': {
             transform: 'react-icons/{{member}}',
         },
-        'lucide-react': {
-            transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
-        },
+        // lucide-react removed - handled by optimizePackageImports
     },
 
     // Output optimization
