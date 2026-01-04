@@ -84,6 +84,15 @@ const nextConfig = {
             transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
         },
     },
+
+    // Output optimization
+    output: 'standalone',
+
+    // Performance budgets
+    onDemandEntries: {
+        maxInactiveAge: 25 * 1000,
+        pagesBufferLength: 2,
+    },
 };
 
 export default nextConfig;

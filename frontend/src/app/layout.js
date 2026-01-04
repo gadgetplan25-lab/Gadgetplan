@@ -115,8 +115,14 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"} />
 
+        {/* Preload critical assets */}
+        <link rel="preload" as="image" href="/logo-gadgetplan-biru.png" fetchPriority="high" />
+
         {/* Viewport optimization */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+
+        {/* Reduce CLS */}
+        <meta name="color-scheme" content="light" />
 
         <script
           type="application/ld+json"
