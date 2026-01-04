@@ -7,23 +7,43 @@ import ProductCard from "@/components/productCard";
 import PopularServices from "@/components/PopularServices";
 import Footer from "@/components/footer";
 
-// Server-side data fetching
+// Server-side data fetching with build-time fallback
 async function getProducts() {
+  // Skip API call during build if API is not available
+  if (process.env.SKIP_API_FETCH === 'true') {
+    console.log('⚠️ Skipping API fetch during build');
+    return [];
+  }
+
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+    // Add timeout to prevent hanging during build
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     const res = await fetch(`${apiUrl}/api/user/products`, {
       next: { revalidate: 60 }, // ISR: Revalidate every 60 seconds
-      cache: 'force-cache'
+      cache: 'force-cache',
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
+
     if (!res.ok) {
+      console.warn(`⚠️ API returned ${res.status}, using empty products`);
       return [];
     }
 
     const data = await res.json();
     return data.products || [];
   } catch (error) {
-    console.error("Failed to fetch products:", error);
+    // Suppress error during build, just log warning
+    if (error.name === 'AbortError') {
+      console.warn('⚠️ API fetch timeout, using empty products');
+    } else {
+      console.warn('⚠️ Failed to fetch products:', error.message);
+    }
     return [];
   }
 }
