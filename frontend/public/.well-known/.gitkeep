@@ -1,0 +1,2 @@
+This file ensures the .well-known directory is tracked by git.
+This directory is used for SSL certificate verification (ACME challenge).

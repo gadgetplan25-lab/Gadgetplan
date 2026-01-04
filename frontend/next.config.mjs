@@ -94,6 +94,21 @@ const nextConfig = {
         pagesBufferLength: 2,
     },
 
+    // Allow .well-known paths (for SSL certificate verification)
+    async headers() {
+        return [
+            {
+                source: '/.well-known/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=0, must-revalidate',
+                    },
+                ],
+            },
+        ];
+    },
+
     // Production-only optimizations
     ...(process.env.NODE_ENV === 'production' && {
         productionBrowserSourceMaps: false,
