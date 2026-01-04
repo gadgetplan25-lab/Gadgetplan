@@ -6,8 +6,8 @@ const Category = require("./category");
 const Product = require("./product");
 const ProductImage = require("./productImage");
 const Order = require("./order");
-const OrderItem = require("./OrderItem");
-const Payment = require("./Payment");
+const OrderItem = require("./orderItem"); // Fixed: was ./OrderItem
+const Payment = require("./payment"); // Fixed: was ./Payment
 const Technician = require("./technician");
 const Booking = require("./booking");
 const BookingPayment = require("./bookingPayment");
@@ -23,8 +23,8 @@ const ProductTag = require("./productTag");
 const Color = require("./color");
 const Storage = require("./storage");
 const ProductColor = require("./productColor");
-const Wishlist = require("./Wishlist");
-const ProductReview = require("./ProductReview");
+const Wishlist = require("./wishlist"); // Fixed: was ./Wishlist
+const ProductReview = require("./productReview"); // Fixed: was ./ProductReview
 const ProductStorage = require("./productStorage");
 
 
