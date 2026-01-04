@@ -32,7 +32,7 @@ export default function ProductCard({ products = [] }) {
                     className="object-contain"
                     loading={index < 4 ? "eager" : "lazy"}
                     priority={index < 4}
-                    quality={85}
+                    quality={75}
                   />
                 ) : (
                   <span className="text-gray-400 text-xs sm:text-sm">No Image</span>

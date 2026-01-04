@@ -1,25 +1,15 @@
 "use client";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { FaShoppingCart, FaWrench, FaWhatsapp } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { apiFetch } from "@/lib/api";
-import { useAuthGuard } from "@/hook/useAuthGuard";
 
-// Static imports for critical components
+// ALL STATIC IMPORTS - NO DYNAMIC LOADING FOR MAXIMUM SPEED
+import Navbar from "@/components/navbar";
+import ProductCard from "@/components/productCard";
+import PopularServices from "@/components/PopularServices";
+import Footer from "@/components/footer";
 import SkeletonCard from "@/components/SkeletonCard";
-import ShiningText from "@/components/shiningText";
-
-// Dynamic imports for heavy components - improves initial load time
-const Navbar = dynamic(() => import("@/components/navbar"));
-
-const ProductCard = dynamic(() => import("@/components/productCard"));
-
-const PopularServices = dynamic(() => import("@/components/PopularServices"));
-
-const Footer = dynamic(() => import("@/components/footer"), {
-  ssr: false, // Footer doesn't need SSR
-});
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
@@ -48,12 +38,8 @@ export default function HomePage() {
         {/* Hero Section */}
         <section className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            <h1 className="w-full mb-3 sm:mb-4 md:mb-6">
-              <ShiningText
-                text="Toko & Service iPhone Premium"
-                className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight block text-[#002B50]"
-                duration={3}
-              />
+            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight text-[#002B50] mb-3 sm:mb-4 md:mb-6">
+              Toko & Service iPhone Premium
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2 sm:px-4">
               Aksesori original & layanan perbaikan cepat bergaransi.

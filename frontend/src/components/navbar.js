@@ -152,6 +152,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                 className="h-full w-auto object-contain"
                 priority
                 quality={90}
+                fetchPriority="high"
               />
             </div>
           </div>
