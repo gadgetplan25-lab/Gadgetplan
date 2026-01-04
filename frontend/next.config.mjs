@@ -11,6 +11,9 @@ const nextConfig = {
         root: path.resolve(__dirname, '..'),
     },
 
+    // Performance: Enable SWC minification
+    swcMinify: true,
+
     images: {
         // Enable image optimization
         formats: ['image/webp', 'image/avif'],
@@ -45,6 +48,9 @@ const nextConfig = {
 
         // Minimize layout shift
         minimumCacheTTL: 60,
+        dangerouslyAllowSVG: true,
+        contentDispositionType: 'attachment',
+        contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
 
     // Enable compression
@@ -62,7 +68,21 @@ const nextConfig = {
 
     // Experimental features for better performance
     experimental: {
-        optimizePackageImports: ['sweetalert2', 'swiper', 'recharts', 'lucide-react'],
+        optimizePackageImports: ['sweetalert2', 'swiper', 'recharts', 'lucide-react', 'react-icons'],
+        optimizeCss: true,
+    },
+
+    // Strict mode for better performance
+    reactStrictMode: true,
+
+    // Modularize imports for tree shaking
+    modularizeImports: {
+        'react-icons': {
+            transform: 'react-icons/{{member}}',
+        },
+        'lucide-react': {
+            transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+        },
     },
 };
 

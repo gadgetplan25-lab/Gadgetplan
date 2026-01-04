@@ -108,8 +108,11 @@ export default function RootLayout({ children }) {
     <html lang="id" suppressHydrationWarning>
       <head>
         {/* Preconnect to backend API for faster requests */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"} />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"} />
+
+        {/* Viewport optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
 
         <script
           type="application/ld+json"

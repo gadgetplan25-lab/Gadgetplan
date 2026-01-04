@@ -11,21 +11,14 @@ import SkeletonCard from "@/components/SkeletonCard";
 import ShiningText from "@/components/shiningText";
 
 // Dynamic imports for heavy components - improves initial load time
-const Navbar = dynamic(() => import("@/components/navbar"), {
-  loading: () => <div className="h-16 bg-white animate-pulse" />,
-});
+const Navbar = dynamic(() => import("@/components/navbar"));
 
-const ProductCard = dynamic(() => import("@/components/productCard"), {
-  loading: () => <SkeletonCard count={12} />,
-});
+const ProductCard = dynamic(() => import("@/components/productCard"));
 
-const PopularServices = dynamic(() => import("@/components/PopularServices"), {
-  loading: () => <div className="h-64 bg-gray-50 animate-pulse rounded-2xl" />,
-});
+const PopularServices = dynamic(() => import("@/components/PopularServices"));
 
 const Footer = dynamic(() => import("@/components/footer"), {
   ssr: false, // Footer doesn't need SSR
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse" />,
 });
 
 export default function HomePage() {

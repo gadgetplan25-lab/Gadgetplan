@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-@import "swiper/css";
-@import "swiper/css/navigation";
-@import "swiper/css/pagination";
-
 /* ============================================
    RESPONSIVE DESIGN SYSTEM - 2024-2025
    Based on Tailwind CSS, Apple.com, Material Design
@@ -224,11 +220,11 @@
 }
 
 .animate-leftIn {
-  animation: leftIn 2s cubic-bezier(.2, .8, .2, 1) both;
+  animation: leftIn 0.8s cubic-bezier(.2, .8, .2, 1) both;
 }
 
 .animate-rightIn {
-  animation: rightIn 2s cubic-bezier(.2, .8, .2, 1) both;
+  animation: rightIn 0.8s cubic-bezier(.2, .8, .2, 1) both;
 }
 
 @keyframes fadeIn {
