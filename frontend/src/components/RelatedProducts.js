@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { apiFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { getProductImageUrl } from "@/lib/config";
@@ -77,12 +78,16 @@ export default function RelatedProducts({ tagIds = [], currentProductId }) {
               onClick={() => router.push(`/detailProduct/${product.id}`)}
               className="bg-white border border-[#B5C9DA] rounded-xl p-4 cursor-pointer hover:shadow-md transition"
             >
-              <img
-                src={getProductImageUrl(product.ProductImages[0]?.image_url)}
-                alt={product.name}
-                crossOrigin="anonymous"
-                className="w-full h-40 object-cover rounded-lg"
-              />
+              <div className="relative w-full h-40">
+                <Image
+                  src={getProductImageUrl(product.ProductImages[0]?.image_url)}
+                  alt={product.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover rounded-lg"
+                  loading="lazy"
+                />
+              </div>
               <h4 className="font-semibold mt-2">{product.name}</h4>
               <p className="text-sm text-gray-500">
                 Rp {product.price?.toLocaleString("id-ID")}

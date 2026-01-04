@@ -52,6 +52,19 @@ const nextConfig = {
 
     // Disable x-powered-by header
     poweredByHeader: false,
+
+    // Compiler optimizations
+    compiler: {
+        removeConsole: process.env.NODE_ENV === 'production' ? {
+            exclude: ['error', 'warn'],
+        } : false,
+    },
+
+    // Experimental features for better performance
+    experimental: {
+        optimizePackageImports: ['sweetalert2', 'swiper', 'recharts', 'lucide-react'],
+    },
 };
 
 export default nextConfig;
+
