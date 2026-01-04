@@ -16,7 +16,7 @@ async function getProducts() {
   }
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
     // Add timeout to prevent hanging during build
     const controller = new AbortController();
