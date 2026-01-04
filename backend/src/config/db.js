@@ -36,12 +36,15 @@ const sequelize = new Sequelize(
 
     // Query options
     dialectOptions: {
-      ssl: process.env.NODE_ENV === 'production' ? {
+      // Only use SSL for cloud databases (Railway, PlanetScale, etc)
+      // Localhost MySQL doesn't support SSL
+      ssl: (process.env.NODE_ENV === 'production' && process.env.DB_HOST !== 'localhost' && process.env.DB_HOST !== '127.0.0.1') ? {
         require: true,
         rejectUnauthorized: false
       } : false,
       supportBigNumbers: true,
-      bigNumberStrings: true
+      bigNumberStrings: true,
+      connectTimeout: 60000 // 60 seconds timeout
     }
   }
 );
