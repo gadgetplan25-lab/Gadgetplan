@@ -9,7 +9,6 @@ import { useAuthGuard } from "@/hook/useAuthGuard";
 // Static imports for critical components
 import SkeletonCard from "@/components/SkeletonCard";
 import ShiningText from "@/components/shiningText";
-import LoadingAnimation from "@/components/loadingAnimation";
 
 // Dynamic imports for heavy components - improves initial load time
 const Navbar = dynamic(() => import("@/components/navbar"), {
@@ -30,14 +29,8 @@ const Footer = dynamic(() => import("@/components/footer"), {
 });
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     setProductsLoading(true);
@@ -53,19 +46,11 @@ export default function HomePage() {
       });
   }, []);
 
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[#002B50]">
-        <LoadingAnimation />
-      </div>
-    );
-  }
-
   return (
     <>
       <Navbar />
       <main className="flex flex-col gap-12 sm:gap-16 md:gap-24 pb-12 sm:pb-16 pt-4 sm:pt-6 md:pt-12" role="main">
+
 
         {/* Hero Section */}
         <section className="container mx-auto px-4">

@@ -88,11 +88,11 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
     fetchCartCount();
     fetchWishlistCount();
 
-    // Refresh cart count setiap 30 detik (opsional)
+    // Refresh cart count setiap 60 detik (reduced from 30s for better performance)
     const interval = setInterval(() => {
       fetchCartCount();
       fetchWishlistCount();
-    }, 30000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [userData]); // ✅ Dependency: userData
 
