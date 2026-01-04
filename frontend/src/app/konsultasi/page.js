@@ -146,7 +146,6 @@ export default function KonsultasiPage() {
               Tim ahli kami siap membantu Anda dengan konsultasi gratis dan solusi terbaik untuk gadget Anda
             </p>
 
-            {/* CTA WhatsApp Button */}
             <button
               onClick={() => openWhatsApp()}
               className="group inline-flex items-center justify-center gap-2 sm:gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold px-5 xs:px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 rounded-full text-xs xs:text-sm sm:text-base md:text-lg shadow-xl hover:shadow-[#25D366]/30 transition-all duration-300 transform hover:scale-105 min-h-[48px] sm:min-h-[52px] w-full xs:w-auto max-w-sm mx-auto"
@@ -155,10 +154,6 @@ export default function KonsultasiPage() {
               <span>Chat WhatsApp</span>
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-
-            <p className="text-white/70 text-xs xs:text-sm mt-4 sm:mt-5">
-              ⚡ Respon cepat dalam 1-2 menit • 🔒 Privasi terjamin
-            </p>
           </div>
         </div>
 
