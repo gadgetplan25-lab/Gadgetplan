@@ -1,7 +1,7 @@
 const { CartItem, Cart, Product, Order, OrderItem } = require("../models");
 const { v4: uuidv4 } = require("uuid");
 
-const Payment = require("../models/Payment");
+const Payment = require("../models/payment"); // Fixed: was ../models/Payment
 
 
 
