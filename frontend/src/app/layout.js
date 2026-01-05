@@ -76,6 +76,11 @@ export const metadata = {
     canonical: 'https://gadgetplan.com',
   },
   category: 'technology',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -121,6 +126,11 @@ export default function RootLayout({ children }) {
         {/* Preconnect to Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Favicon - Explicit declaration to override cache */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
 
         {/* Viewport optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />

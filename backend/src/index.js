@@ -39,6 +39,7 @@ app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:3003',
+      // Local development
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
@@ -54,7 +55,14 @@ app.use(cors({
       'https://127.0.0.1:3000',
       'https://127.0.0.1:3001',
       'https://127.0.0.1:3002',
-      'https://127.0.0.1:3003'
+      'https://127.0.0.1:3003',
+      // Production domains
+      'https://gadgetplan.id',
+      'https://www.gadgetplan.id',
+      'http://gadgetplan.id',
+      'http://www.gadgetplan.id',
+      'https://api.gadgetplan.id',
+      'http://api.gadgetplan.id'
     ];
 
     // Allow requests with no origin (mobile apps, Postman, server-to-server)
