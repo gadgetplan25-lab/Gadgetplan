@@ -20,7 +20,7 @@ const generalLimiter = rateLimit({
 // Strict limiter for authentication endpoints
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 100 : 200, // More reasonable limit for production
+    max: process.env.NODE_ENV === 'production' ? 20 : 200, // Strict limit per user recommendation
     message: 'Terlalu banyak percobaan login/register. Silakan coba lagi setelah 15 menit.',
     skipSuccessfulRequests: true, // Don't count successful requests
     skip: (req) => {
