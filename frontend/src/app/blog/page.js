@@ -7,6 +7,7 @@ import SkeletonBlog from "@/components/SkeletonBlog";
 import { formatTimeAgo } from "@/utils/time";
 import LoadingAnimation from "@/components/loadingAnimation";
 import Link from "next/link";
+import { getApiUrl, getBaseUrl } from "@/lib/config";
 
 const BlogPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,7 +21,7 @@ const BlogPage = () => {
     const fetchBlogs = async () => {
       try {
         setBlogsLoading(true);
-        const res = await fetch("http://localhost:4000/api/blogs");
+        const res = await fetch(`${getApiUrl()}/blogs`);
         const data = await res.json();
         setBlogs(data);
         setBlogsLoading(false);
@@ -83,7 +84,7 @@ const BlogPage = () => {
               className="lg:col-span-2 relative rounded-xl overflow-hidden shadow-lg block h-64 sm:h-80 md:h-96"
             >
               <Image
-                src={`http://localhost:4000/public/${blogs[0].banner_image}`}
+                src={`${getBaseUrl()}/public/${blogs[0].banner_image}`}
                 alt={blogs[0].title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 66vw"
@@ -111,7 +112,7 @@ const BlogPage = () => {
                 >
                   <div className="relative w-20 h-16 sm:w-28 sm:h-20 flex-shrink-0">
                     <Image
-                      src={`http://localhost:4000/public/${blog.banner_image}`}
+                      src={`${getBaseUrl()}/public/${blog.banner_image}`}
                       alt={blog.title}
                       fill
                       sizes="(max-width: 640px) 80px, 112px"
@@ -141,7 +142,7 @@ const BlogPage = () => {
               >
                 <div className="relative w-full h-48">
                   <Image
-                    src={`http://localhost:4000/public/${blog.banner_image}`}
+                    src={`${getBaseUrl()}/public/${blog.banner_image}`}
                     alt={blog.title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"

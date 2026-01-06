@@ -1,0 +1,21 @@
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.shiningText {
+    background: linear-gradient(110deg, #002B50 35%, #FDFEFF 50%, #002B50 75%, #002B50);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation-name: shimmer;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    /* Font size inheriting from parent */
+}

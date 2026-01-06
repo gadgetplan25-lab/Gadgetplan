@@ -107,7 +107,7 @@ export default function ProductPage() {
         <ShiningText
           text="Produk Kami"
           className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 py-2 sm:py-4 flex justify-center"
-          duration={3}
+          duration={6}
         />
         <p className="text-xs sm:text-sm md:text-base text-[#002B50]/70 mt-1 flex justify-center text-center px-4">
           Temukan berbagai produk yang tersedia

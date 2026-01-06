@@ -98,6 +98,8 @@ app.use(cors({
 }));
 
 const staticPath = path.join(__dirname, "..", "public");
+console.log("📂 Static files path:", staticPath); // Debug log
+
 app.use(
   "/public",
   express.static(staticPath)

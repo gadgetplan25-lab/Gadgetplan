@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
+import { getProductImageUrl } from "@/lib/config";
 import ProductSidebar from "./ProductSidebar";
 import ProductForm from "./ProductForm";
 import Swal from "sweetalert2";
@@ -216,10 +217,10 @@ export default function ProductsPage() {
                       <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center">
                         {p.ProductImages?.[0] ? (
                           <img
-                            src={`http://localhost:4000/public/products/${p.ProductImages[0].image_url}`}
+                            src={getProductImageUrl(p.ProductImages[0].image_url)}
                             alt={p.name}
                             className="w-full h-full object-cover"
-                            crossOrigin="anonymous"
+                            onError={(e) => { e.target.onerror = null; e.target.src = "/default-product.png"; }}
                           />
                         ) : (
                           <ImageIcon size={16} className="text-slate-300" />
@@ -271,10 +272,10 @@ export default function ProductsPage() {
                 <div className="h-48 bg-slate-100 relative overflow-hidden">
                   {p.ProductImages?.[0] ? (
                     <img
-                      src={`http://localhost:4000/public/products/${p.ProductImages[0].image_url}`}
+                      src={getProductImageUrl(p.ProductImages[0].image_url)}
                       alt={p.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      crossOrigin="anonymous"
+                      onError={(e) => { e.target.onerror = null; e.target.src = "/default-product.png"; }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300">

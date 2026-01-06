@@ -113,9 +113,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
-        {/* Critical CSS Inline for instant rendering */}
-        <style dangerouslySetInnerHTML={{ __html: `body{margin:0;font-family:system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}h1,h2,p{margin:0}.container{width:100%;margin-left:auto;margin-right:auto;padding-left:1rem;padding-right:1rem}@media(min-width:640px){.container{padding-left:1.5rem;padding-right:1.5rem}}@media(min-width:768px){.container{padding-left:3rem;padding-right:3rem}}` }} />
-
         {/* Preconnect to backend API for faster requests */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"} crossOrigin="anonymous" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"} />
@@ -137,17 +134,18 @@ export default function RootLayout({ children }) {
 
         {/* Reduce CLS */}
         <meta name="color-scheme" content="light" />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-          defer
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        {/* JSON-LD Schema - moved to body to avoid hydration issues */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          suppressHydrationWarning
+        />
+
         {children}
 
         {/* Service Worker Registration */}

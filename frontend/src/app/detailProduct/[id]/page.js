@@ -27,16 +27,12 @@ export default function ProductDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
-  const [shippingCost, setShippingCost] = useState(null);
-  const [shippingDetail, setShippingDetail] = useState(null);
-  const [checkoutResult, setCheckoutResult] = useState(null);
 
   // 🔹 Wishlist state
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  // 🔹 Modal checkout
-  const [showModal, setShowModal] = useState(false);
+  // 🔹 User data
   const [user, setUser] = useState(null);
   const [address, setAddress] = useState("");
 
@@ -143,68 +139,6 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleCheckout = async () => {
-    // Validasi dinamis: hanya cek varian yang memang ada
-    const hasColors = product.colors?.length > 0;
-    const hasStorages = product.storages?.length > 0;
-
-    if (hasColors && !selectedColor) {
-      Swal.fire("Pilih Warna", "Silakan pilih warna terlebih dahulu.", "warning");
-      return;
-    }
-
-    if (hasStorages && !selectedStorage) {
-      Swal.fire("Pilih Kapasitas", "Silakan pilih kapasitas penyimpanan terlebih dahulu.", "warning");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await apiFetch("/order/checkout", {
-        method: "POST",
-        body: JSON.stringify({
-          items: [
-            {
-              product_id: product.id,
-              quantity: count,
-              color_id: selectedColor,
-              storage_id: selectedStorage,
-            },
-          ],
-          method: "Bank_Transfer",
-          shipping_cost: shippingCost,
-          shipping_detail: shippingDetail,
-        }),
-      });
-
-      if (res?.message === "Checkout berhasil") {
-        setShippingCost(res.shipping_cost);
-        setShippingDetail(res.shipping_detail);
-        setCheckoutResult(res);
-        window.location.href = "/pesananSaya"; // Redirect setelah sukses
-      } else {
-        Swal.fire("Error", "Checkout gagal", "error");
-      }
-    } catch (err) {
-      console.error("❌ Gagal checkout:", err);
-      Swal.fire("Error", err.message || "Terjadi kesalahan saat checkout", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 Update alamat user
-  const handleUpdateAddress = async () => {
-    try {
-      const res = await apiFetch("/user/address", {
-        method: "PUT",
-        body: JSON.stringify({ address }),
-      });
-      Swal.fire("Berhasil", "Alamat berhasil diperbarui", "success");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    }
-  };
 
   // 🔹 Toggle Wishlist
   const handleToggleWishlist = async () => {
@@ -259,8 +193,8 @@ export default function ProductDetailPage() {
     }
   };
 
-  // Handler untuk tombol 'Beli Sekarang'
-  const handleShowModal = async () => {
+  // Beli Sekarang - langsung checkout ke WhatsApp
+  const handleBuyNow = async () => {
     // Validasi dinamis: hanya cek varian yang memang ada
     const hasColors = product.colors?.length > 0;
     const hasStorages = product.storages?.length > 0;
@@ -274,38 +208,70 @@ export default function ProductDetailPage() {
       Swal.fire("Pilih Kapasitas", "Silakan pilih kapasitas penyimpanan terlebih dahulu.", "warning");
       return;
     }
-    let ongkirError = null;
-    if (user && user.city_id) {
-      try {
-        const res = await apiFetch("/order/shipping/estimate", {
-          method: "POST",
-          body: JSON.stringify({
-            destination: user.city_id,
-            weight: 1000,
-            courier: "jne",
-          }),
+
+    try {
+      setLoading(true);
+
+      // Buat order langsung
+      const res = await apiFetch("/order/checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          items: [
+            {
+              product_id: product.id,
+              quantity: count,
+              color_id: selectedColor || null,
+              storage_id: selectedStorage || null,
+            },
+          ],
+          payment_method: "whatsapp",
+        }),
+      });
+
+      if (res?.message === "Checkout berhasil") {
+        // Siapkan pesan WhatsApp
+        const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE;
+        const orderId = res.order.id;
+        const totalBayar = (product.price * count).toLocaleString("id-ID");
+        const customerName = user?.user?.name || user?.name || "Customer";
+
+        const messageRaw = `Halo Admin, saya ingin konfirmasi pesanan baru.\\n\\n` +
+          `Order ID: *#${orderId}*\\n` +
+          `Nama: ${customerName}\\n` +
+          `Produk: ${product.name} (${count}x)\\n` +
+          `Total Produk: Rp ${totalBayar}\\n` +
+          `(Belum termasuk ongkir)\\n\\n` +
+          `Mohon info total pembayaran + ongkir. Terima kasih.`;
+
+        const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
+
+        Swal.fire({
+          title: "Checkout Berhasil!",
+          text: "Anda akan diarahkan ke WhatsApp untuk konfirmasi pembayaran.",
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Lanjut ke WhatsApp",
+          cancelButtonText: "Lihat Pesanan",
+          confirmButtonColor: "#065f46"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.open(waLink, "_blank");
+            window.location.href = "/pesananSaya";
+          } else {
+            window.location.href = "/pesananSaya";
+          }
         });
-        if (res.shipping_cost === 0 || !res.shipping_cost) {
-          ongkirError = "Ongkir tidak tersedia untuk alamat Anda. Silakan cek alamat atau coba kurir lain.";
-          setShippingCost(null);
-          setShippingDetail(null);
-        } else {
-          setShippingCost(res.shipping_cost);
-          setShippingDetail(res.shipping_detail);
-        }
-      } catch (err) {
-        ongkirError = "Gagal mengambil ongkir. Silakan coba lagi.";
-        setShippingCost(null);
-        setShippingDetail(null);
+      } else {
+        throw new Error("Checkout gagal");
       }
-    }
-    setShowModal(true);
-    if (ongkirError) {
-      setTimeout(() => {
-        Swal.fire("Error Ongkir", ongkirError, "error");
-      }, 500);
+    } catch (error) {
+      console.error("❌ Gagal checkout:", error);
+      Swal.fire("Error", error.message || "Terjadi kesalahan saat checkout.", "error");
+    } finally {
+      setLoading(false);
     }
   };
+
 
   if (isLoading) {
     return (
@@ -474,7 +440,7 @@ export default function ProductDetailPage() {
                 Tambah ke Keranjang
               </button>
               <button
-                onClick={handleShowModal}
+                onClick={handleBuyNow}
                 disabled={loading}
                 className="flex-1 bg-[#002B50] text-white py-3 min-h-[48px] rounded-lg font-semibold hover:bg-[#003366] transition text-sm sm:text-base"
               >
@@ -494,82 +460,6 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* 🔹 Modal Konfirmasi Checkout */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-md sm:max-w-lg rounded-xl p-4 sm:p-6 shadow-lg relative max-h-[90vh] overflow-y-auto">
-            {/* Tombol Close */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl font-bold"
-              aria-label="Tutup"
-              type="button"
-            >
-              ×
-            </button>
-            <h2 className="text-xl font-semibold mb-3 text-[#002B50]">Konfirmasi Pembelian</h2>
-            <div className="border-b pb-2 mb-3">
-              <p><strong>Produk:</strong> {product.name}</p>
-              <p><strong>Harga:</strong> Rp {product.price.toLocaleString("id-ID")}</p>
-              <p><strong>Kuantitas:</strong> {count}</p>
-            </div>
-            <div className="mb-3">
-              <p><strong>Nama:</strong> {user?.user?.name || user?.name || "-"}</p>
-              <p><strong>Email:</strong> {user?.user?.email || user?.email || "-"}</p>
-              <label className="font-semibold mt-2 block">Alamat Pengiriman</label>
-              <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full border rounded-lg p-2"
-                rows={3}
-              />
-              <Button className="mt-2" onClick={handleUpdateAddress}>
-                Simpan Alamat
-              </Button>
-            </div>
-            {/* Tampilkan ongkir jika sudah ada */}
-            {shippingCost !== null && shippingCost > 0 && (
-              <div className="mb-3">
-                <p><strong>Ongkir:</strong> Rp {shippingCost.toLocaleString("id-ID")}</p>
-                <p><strong>Total Bayar:</strong> Rp {(product.price * count + shippingCost).toLocaleString("id-ID")}</p>
-                {shippingDetail && (
-                  <p className="text-xs text-gray-500">
-                    Kurir: {shippingDetail.service} - Estimasi: {shippingDetail.etd || "-"} hari
-                  </p>
-                )}
-                <div className="flex flex-col gap-2 mt-2">
-                  <Button
-                    className="w-full"
-                    onClick={handleCheckout}
-                    disabled={loading}
-                  >
-                    {loading ? "Memproses..." : "Lanjutkan Checkout"}
-                  </Button>
-                  {/* Hapus tombol Lihat Pesanan Saya */}
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Tutup
-                  </Button>
-                </div>
-              </div>
-            )}
-            {shippingCost === null || shippingCost === 0 ? (
-              <div className="mb-3 text-red-600 text-sm">Ongkir tidak tersedia. Silakan cek alamat atau coba kurir lain.</div>
-            ) : null}
-            {(shippingCost === null || shippingCost === 0) && (
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setShowModal(false)}>Batal</Button>
-                <Button onClick={handleCheckout} disabled={loading}>
-                  {loading ? "Memproses..." : "Lanjutkan Checkout"}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
       <Footer />
     </>
   );

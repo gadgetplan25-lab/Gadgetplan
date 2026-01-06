@@ -16,10 +16,6 @@ function validateEnv() {
     'EMAIL': 'Email address',
     'EMAIL_PASS': 'Email password',
 
-    // Shipping
-    'RAJAONGKIR_API_KEY': 'RajaOngkir API key',
-    'SHOP_CITY_ID': 'Shop city ID',
-
     // App
     'FRONTEND_URL': 'Frontend URL',
     'NODE_ENV': 'Node environment'

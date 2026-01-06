@@ -40,54 +40,6 @@ router.put("/settings", verifyToken, userController.updateSettings);
 router.put("/orders/:id/complete", verifyToken, userController.completeOrder);
 router.put("/orders/:id/cancel", verifyToken, userController.cancelOrder);
 
-// Proxy RajaOngkir: Provinsi
-router.get("/rajaongkir/province", async (req, res) => {
-  try {
-    const search = req.query.search || "";
-    const response = await axios.get(
-      `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?type=province&search=${encodeURIComponent(search)}`,
-      { headers: { key: process.env.RAJAONGKIR_API_KEY } }
-    );
-    res.json(response.data);
-  } catch (err) {
-    console.error("❌ Gagal fetch provinsi RajaOngkir:", err.message);
-    const status = err.response?.status || 500;
-    res.status(status).json({ message: "Gagal fetch provinsi RajaOngkir", error: err.message, details: err.response?.data });
-  }
-});
-
-// Proxy RajaOngkir: Kota/Kabupaten
-router.get("/rajaongkir/city", async (req, res) => {
-  try {
-    const { province, search } = req.query;
-    const response = await axios.get(
-      `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?type=city&province=${encodeURIComponent(province)}&search=${encodeURIComponent(search || "")}`,
-      { headers: { key: process.env.RAJAONGKIR_API_KEY } }
-    );
-    res.json(response.data);
-  } catch (err) {
-    console.error("❌ Gagal fetch kota RajaOngkir:", err.message);
-    const status = err.response?.status || 500;
-    res.status(status).json({ message: "Gagal fetch kota RajaOngkir", error: err.message, details: err.response?.data });
-  }
-});
-
-// Proxy RajaOngkir: Kecamatan (Subdistrict)
-router.get("/rajaongkir/subdistrict", async (req, res) => {
-  try {
-    const { city, search } = req.query;
-    if (!city) return res.status(400).json({ message: "City ID is required" });
-
-    const response = await axios.get(
-      `https://rajaongkir.komerce.id/api/v1/destination/domestic-destination?type=subdistrict&city=${encodeURIComponent(city)}&search=${encodeURIComponent(search || "")}`,
-      { headers: { key: process.env.RAJAONGKIR_API_KEY } }
-    );
-    res.json(response.data);
-  } catch (err) {
-    console.error("❌ Gagal fetch kecamatan RajaOngkir:", err.message);
-    const status = err.response?.status || 500;
-    res.status(status).json({ message: "Gagal fetch kecamatan RajaOngkir", error: err.message, details: err.response?.data });
-  }
-});
+// RajaOngkir routes removed - using static data on frontend
 
 module.exports = router;

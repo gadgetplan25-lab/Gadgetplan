@@ -6,6 +6,8 @@ import Navbar from "@/components/navbar";
 import ProductCard from "@/components/productCard";
 import PopularServices from "@/components/PopularServices";
 import Footer from "@/components/footer";
+import ShiningText from "@/components/shiningText";
+import { getApiUrl } from "@/lib/config"; // Import helper
 
 // Server-side data fetching with build-time fallback
 async function getProducts() {
@@ -16,13 +18,13 @@ async function getProducts() {
   }
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const apiUrl = getApiUrl(); // Use robust helper
 
     // Add timeout to prevent hanging during build
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-    const res = await fetch(`${apiUrl}/api/user/products`, {
+    const res = await fetch(`${apiUrl}/user/products`, { // Use clean apiUrl + endpoint
       next: { revalidate: 60 }, // ISR: Revalidate every 60 seconds
       cache: 'force-cache',
       signal: controller.signal,
@@ -60,8 +62,8 @@ export default async function HomePage() {
         {/* Hero Section */}
         <section className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight text-[#002B50] mb-3 sm:mb-4 md:mb-6">
-              Toko & Service iPhone Premium
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-tight tracking-tight mb-3 sm:mb-4 md:mb-6">
+              <ShiningText text="Toko & Service iPhone Premium" duration={6} className="!text-3xl xs:!text-4xl sm:!text-5xl md:!text-6xl lg:!text-7xl xl:!text-8xl font-extrabold" />
             </h1>
             <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2 sm:px-4">
               Aksesori original & layanan perbaikan cepat bergaransi.

@@ -18,6 +18,7 @@ const LoadingAnimation = () => {
           height={100}
           priority
           className="w-[120px] xs:w-[150px] sm:w-[180px] md:w-[220px] lg:w-[280px] h-auto object-contain animate-leftIn"
+          suppressHydrationWarning
         />
         <Image
           src="/plan.svg"
@@ -26,6 +27,7 @@ const LoadingAnimation = () => {
           height={100}
           priority
           className="w-[120px] xs:w-[150px] sm:w-[180px] md:w-[220px] lg:w-[280px] h-auto object-contain -mt-3 xs:-mt-4 sm:-mt-5 md:-mt-6 animate-rightIn"
+          suppressHydrationWarning
         />
       </div>
     </div>

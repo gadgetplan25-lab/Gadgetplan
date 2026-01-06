@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/lib/api";
+import { getProductImageUrl } from "@/lib/config";
 import { X, Upload, Plus, Check } from "lucide-react";
 
 export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduct }) {
@@ -90,7 +91,7 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
       setExistingImages(
         editingProduct.ProductImages?.map(img => ({
           id: img.id,
-          url: `http://localhost:4000/public/products/${img.image_url}`
+          url: getProductImageUrl(img.image_url)
         })) || []
       );
       setDeletedImageIds([]);

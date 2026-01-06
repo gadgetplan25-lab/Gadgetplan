@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { getProductImageUrl } from "@/lib/config";
 
 export default function CartPage() {
   const { loading } = useAuthGuard();
@@ -68,37 +69,7 @@ export default function CartPage() {
     fetchUser();
   }, []);
 
-  // Estimasi ongkir saat modal dibuka
-  useEffect(() => {
-    if (!showModal || !user?.city_id || selectedCartItems.length === 0) {
-      setShippingCost(null);
-      setShippingDetail(null);
-      return;
-    }
-    const estimateShipping = async () => {
-      try {
-        const res = await apiFetch("/order/shipping/estimate", {
-          method: "POST",
-          body: JSON.stringify({
-            destination: user.city_id,
-            weight: 1000,
-            courier: "jne",
-          }),
-        });
-        if (res.shipping_cost === 0 || !res.shipping_cost) {
-          setShippingCost(null);
-          setShippingDetail(null);
-        } else {
-          setShippingCost(res.shipping_cost);
-          setShippingDetail(res.shipping_detail);
-        }
-      } catch {
-        setShippingCost(null);
-        setShippingDetail(null);
-      }
-    };
-    estimateShipping();
-  }, [showModal, user, selectedCartItems.length]);
+  // Ongkir manual - admin akan kasih tau via WhatsApp
 
   // Toggle checkbox
   const toggleSelect = (itemId) => {
@@ -164,9 +135,7 @@ export default function CartPage() {
         credentials: "include",
         body: JSON.stringify({
           cart_item_ids: selectedItems,
-          payment_method: "whatsapp", // Changed payment method
-          shipping_cost: shippingCost,
-          shipping_detail: shippingDetail,
+          payment_method: "whatsapp",
         }),
       });
 
@@ -176,13 +145,25 @@ export default function CartPage() {
 
       // --- WhatsApp Redirect Logic ---
       const orderId = res.order.id;
-      const totalBayar = (total + shippingCost).toLocaleString("id-ID");
+      const totalBayar = total.toLocaleString("id-ID");
       const customerName = user?.user?.name || user?.name || "Customer";
 
       // Ambil nama-nama produk
       const productNames = selectedCartItems.map(item => `- ${item.Product?.name} (${item.quantity}x)`).join('%0a');
 
       const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE;
+
+      // Validasi nomor admin - DISABLED untuk testing
+      // if (!adminPhone) {
+      //   Swal.fire({
+      //     icon: "warning",
+      //     title: "Konfigurasi Belum Lengkap",
+      //     text: "Nomor WhatsApp admin belum diatur. Silakan hubungi administrator.",
+      //     confirmButtonColor: "#065f46"
+      //   });
+      //   setShowModal(false);
+      //   return;
+      // }
       const messageRaw = `Halo Admin, saya ingin konfirmasi pesanan baru.\n\n` +
         `Order ID: *#${orderId}*\n` +
         `Nama: ${customerName}\n` +
@@ -235,7 +216,7 @@ export default function CartPage() {
               cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col xs:flex-row items-start xs:items-center gap-3 sm:gap-4 border rounded-lg p-3 sm:p-4"
+                  className="flex items-center gap-3 sm:gap-4 border rounded-lg p-3 sm:p-4"
                 >
                   <input
                     type="checkbox"
@@ -247,15 +228,19 @@ export default function CartPage() {
                     <Image
                       src={
                         item.Product?.ProductImages?.[0]?.image_url
-                          ? `http://localhost:4000/public/products/${item.Product.ProductImages[0].image_url}`
+                          ? getProductImageUrl(item.Product.ProductImages[0].image_url)
                           : "/default-product.png"
                       }
-                      alt={item.Product?.name}
+                      alt={item.Product?.name || "Product"}
                       fill
                       sizes="(max-width: 640px) 64px, 80px"
                       className="object-cover rounded-lg border"
                       loading="lazy"
                       quality={80}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-product.png";
+                      }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -269,12 +254,15 @@ export default function CartPage() {
                       Stock: {item.Product?.stock}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 xs:gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg"
+                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus dari keranjang"
                     >
-                      🗑
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                     </button>
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
@@ -355,21 +343,11 @@ export default function CartPage() {
                   </div>
                 ))}
               </div>
-              {/* Ongkir & total */}
-              {shippingCost !== null && shippingCost > 0 && (
-                <div className="mb-3">
-                  <p><strong>Ongkir:</strong> Rp {shippingCost.toLocaleString("id-ID")}</p>
-                  <p><strong>Total Bayar:</strong> Rp {(total + shippingCost).toLocaleString("id-ID")}</p>
-                  {shippingDetail && (
-                    <p className="text-xs text-gray-500">
-                      Kurir: {shippingDetail.service} - Estimasi: {shippingDetail.etd || "-"} hari
-                    </p>
-                  )}
-                </div>
-              )}
-              {shippingCost === null || shippingCost === 0 ? (
-                <div className="mb-3 text-red-600 text-sm">Ongkir tidak tersedia. Silakan cek alamat atau coba kurir lain.</div>
-              ) : null}
+              {/* Total tanpa ongkir - ongkir akan diinfokan admin via WA */}
+              <div className="mb-3">
+                <p><strong>Total Produk:</strong> Rp {total.toLocaleString("id-ID")}</p>
+                <p className="text-xs text-gray-500 mt-1">*Ongkir akan diinfokan oleh admin via WhatsApp</p>
+              </div>
               <div className="flex gap-4 mt-4">
                 <Button
                   variant="outline"
@@ -381,7 +359,7 @@ export default function CartPage() {
                 <Button
                   onClick={handleCheckout}
                   className="flex-1"
-                  disabled={selectedCartItems.length === 0 || loading || !shippingCost}
+                  disabled={selectedCartItems.length === 0 || loading}
                 >
                   Checkout
                 </Button>

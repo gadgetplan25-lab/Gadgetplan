@@ -2,13 +2,12 @@ const { v4: uuidv4 } = require("uuid");
 const { Order, OrderItem, Product, Payment, User } = require("../models");
 
 const axios = require("axios");
-const { calculateShippingCost } = require("../utils/rajaOngkirUtils");
+const { calculateShippingCost } = require("../utils/shippingUtils");
 
 // Estimate shipping cost (untuk endpoint /shipping/estimate)
 exports.estimateShipping = async (req, res) => {
   try {
-    let { destination, weight = 1000, courier = "jne" } = req.body;
-    let origin = process.env.SHOP_CITY_ID;
+    let { destination, weight = 1000 } = req.body;
 
     // If destination not provided, get from user
     if (!destination || isNaN(Number(destination))) {
@@ -25,12 +24,16 @@ exports.estimateShipping = async (req, res) => {
       destination = String(user.city_id).trim();
     }
 
-    // Calculate shipping cost using utility function
-    const { cost, detail } = await calculateShippingCost(origin, destination, weight, courier);
+    // Calculate shipping cost using manual utility
+    const result = calculateShippingCost(destination, weight);
 
     res.json({
-      shipping_cost: cost,
-      shipping_detail: detail
+      shipping_cost: result.cost,
+      shipping_detail: {
+        service: result.service,
+        estimate: result.estimate,
+        zone: result.zone,
+      }
     });
 
   } catch (err) {
@@ -77,13 +80,11 @@ exports.checkout = async (req, res) => {
     const user = await require("../models/user").findByPk(user_id);
     if (!user || !user.city_id) throw new Error("Alamat user belum lengkap (city_id kosong)");
     const destination = user.city_id;
-    const origin = process.env.SHOP_CITY_ID;
-    if (!origin) throw new Error("SHOP_CITY_ID belum diatur di .env");
 
     // Berat barang (default 1kg)
     let totalWeight = 1000;
 
-    // Gunakan ongkir dari frontend jika ada, jika tidak fallback hit RajaOngkir
+    // Gunakan ongkir dari frontend jika ada, jika tidak hitung manual
     let shippingCost = 0;
     let shippingDetail = null;
 
@@ -92,12 +93,16 @@ exports.checkout = async (req, res) => {
       shippingDetail = shipping_detail;
     } else {
       try {
-        const { cost, detail } = await calculateShippingCost(origin, destination, totalWeight);
-        shippingCost = cost;
-        shippingDetail = detail;
+        const result = calculateShippingCost(destination, totalWeight);
+        shippingCost = result.cost;
+        shippingDetail = {
+          service: result.service,
+          estimate: result.estimate,
+          zone: result.zone,
+        };
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
-          console.error("❌ Gagal hit RajaOngkir:", err.message);
+          console.error("❌ Gagal hitung ongkir:", err.message);
         }
         shippingCost = 0;
         shippingDetail = null;

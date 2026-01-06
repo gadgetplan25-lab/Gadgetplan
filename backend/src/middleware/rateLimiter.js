@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // General API rate limiter
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 100 : 1000, // More lenient in development
+    max: process.env.NODE_ENV === 'production' ? 500 : 5000, // Much more lenient in development
     message: 'Terlalu banyak request dari IP ini, silakan coba lagi nanti.',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
@@ -12,7 +12,7 @@ const generalLimiter = rateLimit({
 // Strict limiter for authentication endpoints
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 5 : 50, // More lenient in development
+    max: process.env.NODE_ENV === 'production' ? 10 : 200, // Much more lenient in development
     message: 'Terlalu banyak percobaan login/register. Silakan coba lagi setelah 15 menit.',
     skipSuccessfulRequests: true, // Don't count successful requests
 });

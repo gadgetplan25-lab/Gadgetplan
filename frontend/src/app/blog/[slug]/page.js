@@ -6,6 +6,7 @@ import { formatTimeAgo } from "@/utils/time";
 import LoadingAnimation from "@/components/loadingAnimation";
 import Link from "next/link";
 import Footer from "@/components/footer";
+import { getBlogImageUrl } from "@/lib/config";
 
 export default function BlogDetailPage() {
   const { slug } = useParams();
@@ -20,7 +21,7 @@ export default function BlogDetailPage() {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
-      return () => clearTimeout(timer);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -55,16 +56,16 @@ export default function BlogDetailPage() {
   }
 
   if (!blog) {
-  return (
-    <>
-      <Navbar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        cartCount={cartCount}
-        setCartCount={setCartCount}
-      />
-      <div className="text-center py-20">Belum ada blog tersedia.</div>
-    </>
+    return (
+      <>
+        <Navbar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          cartCount={cartCount}
+          setCartCount={setCartCount}
+        />
+        <div className="text-center py-20">Belum ada blog tersedia.</div>
+      </>
     )
   }
 
@@ -97,10 +98,10 @@ export default function BlogDetailPage() {
           <div className="lg:col-span-2">
             {/* Banner Image */}
             <img
-              src={`http://localhost:4000/public/${blog.banner_image.replace(/^\/+/, "")}`}
+              src={getBlogImageUrl(blog.banner_image)}
               alt={blog.title}
-              crossOrigin="anonymous"
               className="w-full h-96 object-cover rounded-lg mb-6"
+              onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
             />
 
             {/* Konten dinamis */}
@@ -111,10 +112,10 @@ export default function BlogDetailPage() {
                 ) : c.type === "image" ? (
                   <img
                     key={i}
-                    src={`http://localhost:4000/public/${(c.content || c.image_url).replace(/^\/+/, "")}`}
+                    src={getBlogImageUrl(c.content || c.image_url)}
                     alt={`konten-${i}`}
-                    crossOrigin="anonymous"
                     className="my-4 rounded-lg"
+                    onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
                   />
                 ) : null
               )}
@@ -131,10 +132,10 @@ export default function BlogDetailPage() {
                   <Link key={f.id} href={`/blog/${f.slug}`} className="block mb-3">
                     <div className="flex gap-3 items-center">
                       <img
-                        src={`http://localhost:4000/public/${f.banner_image.replace(/^\/+/, "")}`}
+                        src={getBlogImageUrl(f.banner_image)}
                         alt={f.title}
-                        crossOrigin="anonymous"
                         className="w-20 h-14 object-cover rounded-md"
+                        onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
                       />
                       <p className="text-sm font-medium">{f.title}</p>
                     </div>
@@ -153,10 +154,10 @@ export default function BlogDetailPage() {
                   <Link key={b.id} href={`/blog/${b.slug}`} className="block mb-3">
                     <div className="flex gap-3 items-center">
                       <img
-                        src={`http://localhost:4000/public/${b.banner_image.replace(/^\/+/, "")}`}
+                        src={getBlogImageUrl(b.banner_image)}
                         alt={b.title}
-                        crossOrigin="anonymous"
                         className="w-20 h-14 object-cover rounded-md"
+                        onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
                       />
                       <p className="text-sm font-medium">{b.title}</p>
                     </div>

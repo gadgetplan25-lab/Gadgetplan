@@ -48,7 +48,6 @@ export async function apiFetch(endpoint, { redirectOnError = true, ...opts } = {
       }
       return { res, data };
     } catch (err) {
-      console.error(`❌ Network error fetching ${apiBaseUrl}${endpoint}:`, err);
       throw err;
     }
   }

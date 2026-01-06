@@ -36,20 +36,20 @@ async function sendEmailViaGmail(to, subject, html = null, text = null, retries 
       }
 
       await gmailTransporter.sendMail(mailOptions);
-      console.log(`✅ Gmail sent to ${to} (attempt ${i + 1})`);
+
       return true;
     } catch (error) {
-      console.error(`❌ Gmail failed (attempt ${i + 1}):`, error.message);
+
 
       if (i === retries - 1) {
         // Last attempt failed
-        console.error(`🚨 All Gmail attempts failed for ${to}`);
+
         throw error;
       }
 
       // Wait before retry (exponential backoff: 1s, 2s, 4s)
       const waitTime = 1000 * Math.pow(2, i);
-      console.log(`⏳ Retrying Gmail in ${waitTime}ms...`);
+
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
@@ -66,10 +66,10 @@ async function sendEmailViaGmail(to, subject, html = null, text = null, retries 
 async function sendEmail(to, subject, html = null, text = null, retries = 3) {
   try {
     await sendEmailViaGmail(to, subject, html, text, retries);
-    console.log(`📧 Email sent successfully via Gmail to ${to}`);
+
     return true;
   } catch (error) {
-    console.error(`❌ Email failed for ${to}:`, error.message);
+
     throw error;
   }
 }
@@ -78,14 +78,14 @@ async function sendEmail(to, subject, html = null, text = null, retries = 3) {
  * Test email configuration
  */
 async function testEmailConfig() {
-  console.log('\n🔧 Testing email configuration...');
+
 
   try {
     await gmailTransporter.verify();
-    console.log('✅ Gmail connection successful');
+
     return true;
   } catch (error) {
-    console.error('❌ Gmail connection failed:', error.message);
+
     return false;
   }
 }

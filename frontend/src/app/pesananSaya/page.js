@@ -95,8 +95,6 @@ function PesananSayaContent() {
 
   const fetchAllData = () => {
     const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE;
-    if (!adminPhone) console.error("NEXT_PUBLIC_ADMIN_PHONE is not set!");
-    console.log("Debug Admin Phone Env:", adminPhone);
 
     // Ambil pesanan
     // Ambil pesanan
@@ -127,7 +125,7 @@ function PesananSayaContent() {
         const messageRaw = `Halo Admin, saya mau bayar DP Booking Service *#${b.id}* sebesar Rp ${dpAmount.toLocaleString("id-ID")}. Mohon infonya.`;
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
 
-        console.log("Generated Booking WA Link:", waLink);
+
 
         return {
           ...b,

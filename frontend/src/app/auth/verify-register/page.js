@@ -171,41 +171,55 @@ function VerifyOtpContent() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-900 relative">
+    <main className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-900 relative">
       {/* Overlay loading */}
       {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-900 border-solid"></div>
+        <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#002B50] border-t-transparent"></div>
+            <span className="text-sm font-semibold text-[#002B50]">Memverifikasi...</span>
+          </div>
         </div>
       )}
 
-      {/* Outer Card */}
-      <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
-          Verifikasi OTP
-        </h1>
-        <p className="text-center text-gray-500 mt-1 mb-4">
-          Masukkan kode OTP yang dikirim ke email <br />
-          <span className="font-semibold text-blue-800">{email}</span>
-        </p>
+      {/* Card Container */}
+      <div className="bg-white shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[#002B50] mb-3">
+            Verifikasi OTP
+          </h1>
+          <p className="text-sm text-gray-600">
+            Masukkan kode OTP yang dikirim ke email
+          </p>
+          <p className="text-sm font-semibold text-[#002B50] mt-2">
+            {email}
+          </p>
+        </div>
 
-        {/* Inner Card */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-center text-gray-800 mb-2">
+        {/* Subtitle */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-[#002B50] mb-2">
             Aktivasi Akun Kamu
-          </h3>
-          <p className="text-sm text-center text-gray-500 mb-4">
+          </h2>
+          <p className="text-sm text-gray-600">
             Silakan masukkan kode OTP untuk melanjutkan
           </p>
+        </div>
 
-          {message && (
-            <div className="mb-3 text-center text-red-600 text-sm font-medium">
+        {/* Error Message */}
+        {message && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-center text-red-600 text-sm font-medium">
               {message}
-            </div>
-          )}
+            </p>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               Kode OTP
             </label>
             <input
@@ -213,26 +227,28 @@ function VerifyOtpContent() {
               placeholder="Masukkan kode OTP"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="border border-gray-300 p-3 w-full mb-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest font-semibold"
+              className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 text-center tracking-widest text-lg font-semibold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002B50] focus:border-transparent transition-all"
               required
+              maxLength={6}
             />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-900 text-white py-2 rounded-md w-full hover:bg-blue-800 transition disabled:opacity-70"
-            >
-              {loading ? "Memverifikasi..." : "Verifikasi Akun"}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#002B50] text-white py-3.5 rounded-lg font-medium hover:bg-[#003b6e] transition disabled:opacity-70"
+          >
+            {loading ? "Memverifikasi..." : "Verifikasi Akun"}
+          </button>
+        </form>
 
-          <p className="text-sm text-center mt-4">
-            Sudah punya akun?{" "}
-            <a href="/auth/login" className="text-blue-600 hover:underline">
-              Login di sini
-            </a>
-          </p>
-        </div>
+        {/* Login Link */}
+        <p className="text-sm text-center mt-6 text-gray-600">
+          Sudah punya akun?{" "}
+          <a href="/auth/login" className="font-semibold text-red-600 hover:text-red-700 hover:underline">
+            Login di sini
+          </a>
+        </p>
       </div>
     </main>
   );

@@ -78,6 +78,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import Swal from "sweetalert2";
 
 export default function VerifyLoginPage() {
   const [otp, setOtp] = useState("");
@@ -103,45 +104,68 @@ export default function VerifyLoginPage() {
         localStorage.removeItem("pendingUserId");
         localStorage.setItem("token", data.token);
 
-        setMessage("✅ Login berhasil!");
-        setTimeout(() => router.push("/"), 1000);
+        Swal.fire({
+          icon: "success",
+          title: "Login Berhasil",
+          text: "Anda akan diarahkan ke halaman utama.",
+          timer: 2000,
+          showConfirmButton: false,
+        }).then(() => router.push("/"));
       }
     } catch (err) {
-      setMessage(`❌ ${err.message}`);
+      setMessage(err.message || "OTP salah / kadaluarsa");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-900 relative">
+    <main className="flex items-center justify-center min-h-screen bg-gray-50 text-gray-900 relative">
       {/* Overlay loading */}
       {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-900 border-solid"></div>
+        <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#002B50] border-t-transparent"></div>
+            <span className="text-sm font-semibold text-[#002B50]">Memverifikasi...</span>
+          </div>
         </div>
       )}
 
-      {/* Outer Card */}
-      <div className="bg-white shadow-xl rounded-2xl p-6 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
-          Verify OTP
-        </h1>
-        <p className="text-center text-gray-500 mt-1 mb-4">
-          Enter the code sent to your email to continue
-        </p>
+      {/* Card Container */}
+      <div className="bg-white shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[#002B50] mb-3">
+            Verify OTP
+          </h1>
+          <p className="text-sm text-gray-600">
+            Enter the code sent to your email to continue
+          </p>
+        </div>
 
-        {/* Inner Card */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-center text-gray-800">
+        {/* Subtitle */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-[#002B50] mb-2">
             OTP Verification
-          </h3>
-          <p className="text-sm text-center text-gray-500 mb-4">
+          </h2>
+          <p className="text-sm text-gray-600">
             Please check your inbox and enter the verification code below
           </p>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Error Message */}
+        {message && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-center text-red-600 text-sm font-medium">
+              {message}
+            </p>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
               One-Time Password (OTP)
             </label>
             <input
@@ -149,36 +173,22 @@ export default function VerifyLoginPage() {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter your 6-digit OTP code"
-              className="border border-gray-300 p-3 w-full mb-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 text-center tracking-widest text-lg font-semibold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002B50] focus:border-transparent transition-all"
               required
+              maxLength={6}
             />
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-900 text-white py-2 rounded-md w-full hover:bg-blue-800 transition disabled:opacity-70"
-            >
-              {loading ? "Verifying..." : "Verify OTP →"}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#002B50] text-white py-3.5 rounded-lg font-medium hover:bg-[#003b6e] transition disabled:opacity-70"
+          >
+            {loading ? "Verifying..." : "Verify OTP →"}
+          </button>
+        </form>
 
-          {message && (
-            <p
-              className={`mt-4 text-sm text-center ${
-                message.includes("✅") ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {message}
-            </p>
-          )}
 
-          <p className="text-sm text-center mt-4">
-            Didn’t receive the code?{" "}
-            <span className="text-blue-600 hover:underline cursor-pointer">
-              Resend
-            </span>
-          </p>
-        </div>
       </div>
     </main>
   );

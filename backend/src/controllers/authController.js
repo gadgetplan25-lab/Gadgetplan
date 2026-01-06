@@ -15,10 +15,8 @@ const getCookieOptions = (req) => {
   const isProduction = process.env.NODE_ENV === "production";
 
   // Dynamic secure check: 
-  // 1. Production always secure
-  // 2. Req is secure (https)
-  // 3. X-Forwarded-Proto is https (behind proxy/ngrok)
-  const isSecure = isProduction || req.secure || req.headers["x-forwarded-proto"] === "https";
+  // Force insecure on dev unless strictly specified
+  const isSecure = isProduction;
 
   return {
     httpOnly: true,

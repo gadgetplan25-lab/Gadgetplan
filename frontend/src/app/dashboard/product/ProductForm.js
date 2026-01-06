@@ -159,6 +159,7 @@
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/lib/api";
+import { getProductImageUrl } from "@/lib/config";
 
 export default function ProductForm({ product, onClose, onUpdated }) {
   const [form, setForm] = useState({
@@ -206,7 +207,7 @@ export default function ProductForm({ product, onClose, onUpdated }) {
           <input type="number" name="category_id" value={form.category_id} onChange={handleChange} placeholder="Kategori ID" className="w-full border p-2 rounded" />
 
           {product.ProductImages?.map((img) => (
-            <img key={img.id} src={`http://localhost:4000/public/products/${img.image_url}`} alt="" className="w-16 h-16 object-cover border rounded" crossOrigin="anonymous" />
+            <img key={img.id} src={getProductImageUrl(img.image_url)} alt="" className="w-16 h-16 object-cover border rounded" onError={(e) => { e.target.onerror = null; e.target.src = "/default-product.png"; }} />
           ))}
 
           <input type="file" multiple onChange={handleFileChange} className="w-full" />

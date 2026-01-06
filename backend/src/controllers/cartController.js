@@ -157,63 +157,14 @@ exports.checkout = async (req, res) => {
       totalPrice += item.quantity * item.Product.price;
     }
 
-    // Ambil city_id user dan city_id toko dari env
-    const user = await require("../models/user").findByPk(user_id);
-    if (!user || !user.city_id) throw new Error("Alamat user belum lengkap (city_id kosong)");
-    const destination = user.city_id;
-    const origin = process.env.SHOP_CITY_ID;
-    if (!origin) throw new Error("SHOP_CITY_ID belum diatur di .env");
-
-    // Berat barang (default 1kg)
-    let totalWeight = 1000;
-
-    // Gunakan ongkir dari frontend jika ada, jika tidak hit RajaOngkir
+    // Ongkir dari frontend atau default 0 (manual)
     let shippingCost = 0;
     let shippingDetail = null;
     if (shipping_cost && shipping_detail) {
       shippingCost = Number(shipping_cost);
       shippingDetail = shipping_detail;
-    } else {
-      try {
-        const params = new URLSearchParams({
-          origin: origin,
-          destination: destination,
-          weight: totalWeight.toString(),
-          courier: "jne",
-          originType: "city",
-          destinationType: "city"
-        });
-
-        const rajaRes = await require("axios").post(
-          "https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost",
-          params,
-          {
-            headers: {
-              key: process.env.RAJAONGKIR_API_KEY,
-              "Content-Type": "application/x-www-form-urlencoded"
-            }
-          }
-        );
-        const data = rajaRes.data?.data || [];
-        if (data.length > 0) {
-          const sorted = data.sort((a, b) => a.cost - b.cost);
-          const cheapest = sorted[0];
-          shippingCost = cheapest.cost;
-          shippingDetail = {
-            courier: cheapest.name,
-            code: cheapest.code,
-            service: cheapest.service,
-            description: cheapest.description,
-            etd: cheapest.etd,
-            cost: cheapest.cost
-          };
-        }
-      } catch (err) {
-        console.error("❌ Gagal hit RajaOngkir:", err?.response?.data || err.message);
-        shippingCost = 0;
-        shippingDetail = null;
-      }
     }
+
 
     // Buat order
     const order = await Order.create({

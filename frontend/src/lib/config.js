@@ -1,8 +1,16 @@
-// Get API base URL from environment variable
 // Development: http://localhost:8080
 // Production: https://api.gadgetplan.id (no port)
 export const getBaseUrl = () => {
-    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    // Remove trailing slash and /api if present to get clean base URL
+    const cleanUrl = url.replace(/\/api\/?$/, "").replace(/\/+$/, "");
+
+    // Debug log
+    if (typeof window !== "undefined") {
+        // console.log("🌐 Base URL Config:", { raw: url, clean: cleanUrl });
+    }
+
+    return cleanUrl;
 };
 
 // Helper untuk URL gambar produk
@@ -16,7 +24,14 @@ export const getProductImageUrl = (filename) => {
 
 // Helper untuk URL API
 export const getApiUrl = () => {
-    return `${getBaseUrl()}/api`;
+    const apiUrl = `${getBaseUrl()}/api`;
+
+    // Debug log
+    if (typeof window !== "undefined") {
+        console.log("🔗 API Endpoint:", apiUrl);
+    }
+
+    return apiUrl;
 };
 
 // Helper untuk URL gambar blog

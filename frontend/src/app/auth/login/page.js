@@ -4,31 +4,17 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import LoadingAnimation from "@/components/loadingAnimation";
 import Swal from "sweetalert2";
-import { FaGoogle } from "react-icons/fa";
+import { HiMail, HiLockClosed } from "react-icons/hi";
+import ShiningText from "@/components/shiningText";
+import ShiningLogo from "@/components/shiningLogo";
 
 export default function LoginPage() {
-  const [step, setStep] = useState("email");
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [sessionExpired, setSessionExpired] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Cek apakah ada redirect dari session expired
-    const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-    if (redirectPath) {
-      setSessionExpired(true);
-      // Tampilkan alert sesi habis
-      Swal.fire({
-        icon: "warning",
-        title: "Sesi Habis",
-        text: "Sesi login Anda telah habis. Silakan login kembali.",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#1e3a8a",
-      });
-    }
-
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
@@ -38,26 +24,7 @@ export default function LoginPage() {
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  const handleCheckEmail = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await apiFetch("/auth/check-email", {
-        method: "POST",
-        body: JSON.stringify({ email: form.email }),
-      });
 
-      if (res?.message?.includes("valid")) {
-        setStep("password");
-      } else {
-        Swal.fire("Error", res?.message || "Email tidak ditemukan", "error");
-      }
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -135,99 +102,120 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-900 relative">
-      {/* Overlay loading */}
-      {loading && (
-        <div className="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-900 border-solid"></div>
-        </div>
-      )}
+    <main className="flex min-h-screen bg-white">
+      {/* LEFT SIDE: Branding */}
+      <div className="hidden lg:flex w-1/2 bg-[#f7fbfd] relative items-center justify-center overflow-hidden">
+        <div className="relative z-10 px-16 py-12 text-center max-w-full flex flex-col items-center justify-center h-full">
+          {/* GadgetPlan Text with Shining Effect */}
+          <h2 className="font-extrabold tracking-tight leading-none mb-4" style={{ fontSize: 'clamp(3rem, 8vw, 8rem)' }}>
+            <ShiningText text="GadgetPlan" duration={6} className="font-extrabold" />
+          </h2>
 
-      {/* Outer Card */}
-      <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 w-full max-w-md mx-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-center text-gray-800">Sign In</h1>
-        <p className="text-center text-sm sm:text-base text-gray-500 mt-1 mb-3 sm:mb-4">
-          Enter your credentials to access your account
-        </p>
 
-        {/* Inner Card */}
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold text-center text-gray-800">
-            Sign in to My Application
-          </h3>
-          <p className="text-xs sm:text-sm text-center text-gray-500 mb-3 sm:mb-4">
-            Welcome back! Please sign in to continue
+
+          {/* Subtitle */}
+          <p className="text-base md:text-lg lg:text-xl text-[#002B50] font-medium max-w-lg leading-relaxed text-center mt-6">
+            Toko & Service iPhone Premium Terpercaya
           </p>
+        </div>
+      </div>
 
-          {/* Continue with Google */}
-          <button
-            type="button"
-            onClick={() => Swal.fire("Info", "Google Sign-In belum diimplementasi", "info")}
-            className="w-full flex items-center justify-center gap-2 border rounded-md py-2.5 min-h-[44px] hover:bg-gray-100 transition mb-3 sm:mb-4 text-sm sm:text-base"
-          >
-            <FaGoogle className="text-red-500" />
-            <span className="font-medium text-gray-700">
-              Continue with Google
-            </span>
-          </button>
-
-          {/* OR separator */}
-          <div className="flex items-center my-4">
-            <div className="flex-grow h-px bg-gray-300"></div>
-            <span className="px-2 text-gray-400 text-sm">or</span>
-            <div className="flex-grow h-px bg-gray-300"></div>
+      {/* RIGHT SIDE: Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 bg-gray-50 relative">
+        {/* Overlay loading */}
+        {loading && (
+          <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+              <span className="text-sm font-semibold text-blue-600">Loading...</span>
+            </div>
           </div>
-          <form onSubmit={step === "email" ? handleCheckEmail : handleLogin}>
-            {step === "email" && (
-              <>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
-                </label>
+        )}
+
+        {/* Card Container */}
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10">
+          {/* Mobile Logo - Only visible on small screens */}
+          <div className="lg:hidden text-center mb-8">
+            <h2 className="text-3xl font-extrabold">
+              <ShiningText text="GadgetPlan" duration={6} className="!text-3xl font-extrabold" />
+            </h2>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">
+              <ShiningText text="Sign In" duration={6} className="!text-3xl font-bold" />
+            </h1>
+            <p className="mt-3 pt-4 text-sm text-gray-600">
+              Akses akun Anda untuk belanja produk dan layanan service iPhone premium
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                Alamat Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <HiMail className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
+                  id="email"
                   type="email"
                   name="email"
-                  placeholder="Enter your email address"
+                  placeholder="name@example.com"
                   value={form.email}
                   onChange={handleChange}
-                  className="border border-gray-300 p-3 w-full mb-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
                   required
                 />
-                <button
-                  type="submit"
-                  className="bg-blue-900 text-white py-2 rounded-md w-full hover:bg-blue-800 transition"
-                >
-                  Continue →
-                </button>
-              </>
-            )}
+              </div>
+            </div>
 
-            {step === "password" && (
-              <>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                Kata Sandi
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <HiLockClosed className="h-5 w-5 text-gray-400" />
+                </div>
                 <input
+                  id="password"
                   type="password"
                   name="password"
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   value={form.password}
                   onChange={handleChange}
-                  className="border border-gray-300 p-3 w-full mb-4 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
                   required
                 />
-                <button
-                  type="submit"
-                  className="bg-blue-900 text-white py-2 rounded-md w-full hover:bg-blue-800 transition"
-                >
-                  Continue →
-                </button>
-              </>
-            )}
+              </div>
+            </div>
+
+
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#002B50] hover:bg-[#003b6e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#002B50] transition-all hover:shadow-lg"
+            >
+              Sign In
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </form>
-          <p className="text-sm text-center mt-4">
-            Don’t have an account?{" "}
-            <a href="/auth/register" className="text-blue-600 hover:underline">
-              Sign up
+
+          {/* Sign up link */}
+          <p className="mt-8 text-center text-sm text-gray-600">
+            Belum punya akun?{" "}
+            <a href="/auth/register" className="font-semibold text-red-600 hover:text-red-700 hover:underline">
+              Daftar
             </a>
           </p>
         </div>

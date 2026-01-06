@@ -106,6 +106,7 @@ import { useState } from "react";
 import ProductForm from "./ProductForm";
 import Swal from "sweetalert2";
 import { apiFetch } from "@/lib/api";
+import { getProductImageUrl } from "@/lib/config";
 
 export default function ProductCard({ product, onDeleted, onUpdated }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -141,10 +142,10 @@ export default function ProductCard({ product, onDeleted, onUpdated }) {
           {product.ProductImages.map((img) => (
             <SwiperSlide key={img.id}>
               <img
-                src={`http://localhost:4000/public/products/${img.image_url}`}
+                src={getProductImageUrl(img.image_url)}
                 alt={product.name}
                 className="w-full h-40 object-cover"
-                crossOrigin="anonymous"
+                onError={(e) => { e.target.onerror = null; e.target.src = "/default-product.png"; }}
               />
             </SwiperSlide>
           ))}
