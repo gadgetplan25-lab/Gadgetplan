@@ -30,6 +30,10 @@ const wishlistReviewRoutes = require("./routes/wishlistReviewRoutes");
 
 const app = express();
 
+// Trust proxy is required when running behind a reverse proxy (like Nginx/Cloudflare)
+// to correctly identify user's real IP address for rate limiting
+app.set('trust proxy', 1);
+
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allow CORS
 }));
