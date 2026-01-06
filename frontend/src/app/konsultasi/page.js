@@ -157,32 +157,6 @@ export default function KonsultasiPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="w-full max-w-6xl mx-auto -mt-8 px-4 mb-8 sm:mb-12 relative z-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-[#E3E8EF] px-4 py-5 sm:px-6 sm:py-6 flex flex-col items-center hover:shadow-xl transition-shadow">
-              <Users className="w-6 h-6 sm:w-8 sm:h-8 text-[#002B50] mb-2" />
-              <div className="text-xl xs:text-2xl sm:text-3xl font-bold text-[#002B50]">10,000+</div>
-              <div className="text-[#64748b] text-[10px] xs:text-xs sm:text-sm text-center leading-tight">Pelanggan Puas</div>
-            </div>
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-[#E3E8EF] px-4 py-5 sm:px-6 sm:py-6 flex flex-col items-center hover:shadow-xl transition-shadow">
-              <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-[#25D366] mb-2" />
-              <div className="text-xl xs:text-2xl sm:text-3xl font-bold text-[#002B50]">24/7</div>
-              <div className="text-[#64748b] text-[10px] xs:text-xs sm:text-sm text-center leading-tight">Layanan Online</div>
-            </div>
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-[#E3E8EF] px-4 py-5 sm:px-6 sm:py-6 flex flex-col items-center hover:shadow-xl transition-shadow">
-              <CheckCircle2 className="w-6 h-6 sm:w-8 sm:h-8 text-[#a855f7] mb-2" />
-              <div className="text-xl xs:text-2xl sm:text-3xl font-bold text-[#002B50]">98%</div>
-              <div className="text-[#64748b] text-[10px] xs:text-xs sm:text-sm text-center leading-tight">Tingkat Kepuasan</div>
-            </div>
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-[#E3E8EF] px-4 py-5 sm:px-6 sm:py-6 flex flex-col items-center hover:shadow-xl transition-shadow">
-              <Star className="w-6 h-6 sm:w-8 sm:h-8 text-[#f59e42] mb-2" />
-              <div className="text-xl xs:text-2xl sm:text-3xl font-bold text-[#002B50]">4.9/5</div>
-              <div className="text-[#64748b] text-[10px] xs:text-xs sm:text-sm text-center leading-tight">Rating Service</div>
-            </div>
-          </div>
-        </div>
-
         {/* Why Choose Us */}
         <div className="w-full max-w-6xl mx-auto px-4 md:px-0 mb-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -143,12 +143,12 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
             className="text-2xl font-bold text-blue-900 cursor-pointer flex items-center"
             onClick={() => router.push("/")}
           >
-            <div className="relative h-[32px] sm:h-[40px] md:h-[48px] lg:h-[56px] w-auto">
+            <div className="relative h-[40px] sm:h-[48px] md:h-[56px] lg:h-[64px] w-auto">
               <Image
                 src="/logo-gadgetplan-biru.png"
                 alt="GadgetPlan Logo"
-                width={200}
-                height={56}
+                width={220}
+                height={64}
                 className="h-full w-auto object-contain"
                 priority
                 quality={90}
@@ -166,8 +166,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               className={clsx(
                 "relative text-sm font-medium transition-colors duration-200 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 cursor-pointer",
                 pathname === "/"
-                  ? "text-blue-900 after:scale-x-100 after:bg-blue-900"
-                  : "text-gray-700 hover:text-blue-900 hover:after:scale-x-100 after:bg-[#002B50]"
+                  ? "text-[#002B50] after:scale-x-100 after:bg-[#002B50]"
+                  : "text-[#002B50] hover:after:scale-x-100 after:bg-[#002B50]"
               )}
             >
               Beranda
@@ -184,8 +184,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                 className={clsx(
                   "relative text-sm font-medium transition-colors duration-200 cursor-pointer flex items-center gap-1 py-2",
                   pathname.startsWith("/serviceGo") || pathname.startsWith("/tukarTambah") || pathname.startsWith("/konsultasi")
-                    ? "text-blue-900"
-                    : "text-gray-700 hover:text-blue-900"
+                    ? "text-[#002B50]"
+                    : "text-[#002B50]"
                 )}
               >
                 Layanan
@@ -219,10 +219,9 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                         router.push(item.path);
                         setLayananOpen(false);
                       }}
-                      className="w-full text-left px-6 py-3 hover:bg-[#F7FAFC] transition rounded-xl flex flex-col border-b last:border-b-0 border-[#F1F5F9]"
+                      className="w-full text-left px-6 py-3 hover:bg-[#F7FAFC] transition rounded-xl border-b last:border-b-0 border-[#F1F5F9]"
                     >
-                      <span className="font-semibold text-[#1A3558] text-[15px]">{item.label}</span>
-                      <span className="text-[#64748b] text-sm">{item.desc}</span>
+                      <span className="font-semibold text-[#002B50] text-[15px]">{item.label}</span>
                     </button>
                   ))}
                 </div>
@@ -235,8 +234,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               className={clsx(
                 "relative text-sm font-medium transition-colors duration-200 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 cursor-pointer",
                 pathname.startsWith("/products")
-                  ? "text-blue-900 after:scale-x-100 after:bg-blue-900"
-                  : "text-gray-700 hover:text-blue-900 hover:after:scale-x-100 after:bg-[#002B50]"
+                  ? "text-[#002B50] after:scale-x-100 after:bg-[#002B50]"
+                  : "text-[#002B50] hover:after:scale-x-100 after:bg-[#002B50]"
               )}
             >
               Produk
@@ -249,8 +248,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               className={clsx(
                 "relative text-sm font-medium transition-colors duration-200 after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:transition-transform after:duration-200 cursor-pointer",
                 pathname.startsWith("/blog")
-                  ? "text-blue-900 after:scale-x-100 after:bg-blue-900"
-                  : "text-gray-700 hover:text-blue-900 hover:after:scale-x-100 after:bg-[#002B50]"
+                  ? "text-[#002B50] after:scale-x-100 after:bg-[#002B50]"
+                  : "text-[#002B50] hover:after:scale-x-100 after:bg-[#002B50]"
               )}
             >
               Blog
@@ -396,7 +395,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                     {/* Layanan Header - Clickable */}
                     <button
                       onClick={() => setLayananOpen(!layananOpen)}
-                      className="w-full text-lg font-medium text-gray-700 hover:text-blue-900 text-left py-3 px-2 rounded transition-colors min-h-[48px] flex items-center justify-between"
+                      className="w-full text-lg font-medium text-[#002B50] text-left py-3 px-2 rounded transition-colors min-h-[48px] flex items-center justify-between"
                     >
                       <span>Layanan</span>
                       <svg
@@ -421,8 +420,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                               setLayananOpen(false);
                             }}
                             className={clsx(
-                              "w-full text-base font-medium text-gray-600 hover:text-blue-900 text-left py-2.5 px-4 rounded transition-colors min-h-[44px] flex items-center",
-                              pathname === subItem.path ? "text-blue-900 bg-blue-50 font-semibold" : ""
+                              "w-full text-base font-medium text-[#002B50] text-left py-2.5 px-4 rounded transition-colors min-h-[44px] flex items-center",
+                              pathname === subItem.path ? "bg-blue-50 font-semibold" : ""
                             )}
                           >
                             {subItem.label}
@@ -449,9 +448,9 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                       }
                     }}
                     className={clsx(
-                      "w-full text-lg font-medium text-gray-700 hover:text-blue-900 text-left py-3 px-2 rounded transition-colors relative min-h-[48px] flex items-center",
+                      "w-full text-lg font-medium text-[#002B50] text-left py-3 px-2 rounded transition-colors relative min-h-[48px] flex items-center",
                       isActive
-                        ? "text-blue-900 after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-blue-900"
+                        ? "after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-[#002B50]"
                         : ""
                     )}
                   >
