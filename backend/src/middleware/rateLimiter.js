@@ -7,14 +7,34 @@ const generalLimiter = rateLimit({
     message: 'Terlalu banyak request dari IP ini, silakan coba lagi nanti.',
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    handler: (req, res) => {
+        // Ensure CORS headers are sent even when rate limited
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.status(429).json({
+            error: 'Terlalu banyak request dari IP ini, silakan coba lagi nanti.'
+        });
+    }
 });
 
 // Strict limiter for authentication endpoints
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: process.env.NODE_ENV === 'production' ? 10 : 200, // Much more lenient in development
+    max: process.env.NODE_ENV === 'production' ? 100 : 200, // More reasonable limit for production
     message: 'Terlalu banyak percobaan login/register. Silakan coba lagi setelah 15 menit.',
     skipSuccessfulRequests: true, // Don't count successful requests
+    skip: (req) => {
+        // Don't rate limit /me endpoint as it's called frequently for auth checks
+        return req.path === '/me';
+    },
+    handler: (req, res) => {
+        // Ensure CORS headers are sent even when rate limited
+        res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.status(429).json({
+            error: 'Terlalu banyak percobaan login/register. Silakan coba lagi setelah 15 menit.'
+        });
+    }
 });
 
 // Limiter for OTP requests
