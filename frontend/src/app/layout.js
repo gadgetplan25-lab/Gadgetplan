@@ -132,6 +132,18 @@ export default function RootLayout({ children }) {
 
         {/* Reduce CLS */}
         <meta name="color-scheme" content="light" />
+        {/* Google Analytics (GA4) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-YJRCXW0P8S"></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-YJRCXW0P8S', {
+              page_path: window.location.pathname,
+            });
+          `
+        }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
