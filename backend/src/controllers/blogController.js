@@ -26,10 +26,10 @@ exports.addBlog = async (req, res) => {
     for (let i = 0; i < parsedContent.length; i++) {
       const c = parsedContent[i];
 
-      if (c.type === "text") {
+      if (c.type === "text" || c.type === "html") {
         await BlogContent.create({
           blog_id: blog.id,
-          type: "text",
+          type: c.type, // Preserve the original type (text or html)
           content: c.value,
           position: i + 1,
         });
@@ -128,10 +128,10 @@ exports.updateBlog = async (req, res) => {
     for (let i = 0; i < parsedContent.length; i++) {
       const c = parsedContent[i];
 
-      if (c.type === "text") {
+      if (c.type === "text" || c.type === "html") {
         await BlogContent.create({
           blog_id: blog.id,
-          type: "text",
+          type: c.type, // Preserve the original type (text or html)
           content: c.value,
           position: i + 1,
         });
