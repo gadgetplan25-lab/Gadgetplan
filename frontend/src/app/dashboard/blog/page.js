@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import Swal from "sweetalert2";
 import { FileText, Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { getBaseUrl } from "@/lib/config";
 
 export default function BlogListPage() {
   const [blogs, setBlogs] = useState([]);
@@ -120,7 +121,7 @@ export default function BlogListPage() {
               <div className="h-48 bg-slate-100 w-full flex items-center justify-center relative overflow-hidden">
                 {blog.banner_image ? (
                   <img
-                    src={`http://localhost:4000/public${blog.banner_image}`}
+                    src={`${getBaseUrl()}/public${blog.banner_image}`}
                     alt={blog.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {

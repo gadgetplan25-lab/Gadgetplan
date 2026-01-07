@@ -109,22 +109,30 @@ export default function BlogDetailPage() {
 
               {/* Content */}
               <div className="prose prose-lg max-w-none">
-                {blog.contents?.map((c, i) =>
-                  c.type === "text" ? (
-                    <p key={i} className="text-gray-700 text-lg leading-relaxed mb-6">
-                      {c.content}
-                    </p>
-                  ) : c.type === "image" ? (
-                    <div key={i} className="my-10 rounded-2xl overflow-hidden">
-                      <img
-                        src={getBlogImageUrl(c.content || c.image_url)}
-                        alt={`konten-${i}`}
-                        className="w-full h-auto"
-                        onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
+                {blog.contents?.map((c, i) => {
+                  if (c.type === "text" || c.type === "html") {
+                    // Render HTML content from TinyMCE
+                    return (
+                      <div
+                        key={i}
+                        className="text-gray-700 text-lg leading-relaxed mb-6"
+                        dangerouslySetInnerHTML={{ __html: c.content || c.value }}
                       />
-                    </div>
-                  ) : null
-                )}
+                    );
+                  } else if (c.type === "image") {
+                    return (
+                      <div key={i} className="my-10 rounded-2xl overflow-hidden">
+                        <img
+                          src={getBlogImageUrl(c.content || c.image_url)}
+                          alt={`konten-${i}`}
+                          className="w-full h-auto"
+                          onError={(e) => { e.target.onerror = null; e.target.src = "/default-blog.png"; }}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
             </article>
 
