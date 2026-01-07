@@ -19,7 +19,7 @@ async function runMigration() {
         console.log('✅ Connected to database');
         console.log('📄 Reading migration file...');
 
-        const sqlFile = path.join(__dirname, 'migrations', 'create_product_variants.sql');
+        const sqlFile = path.join(__dirname, '..', 'database', 'migrations', 'create_product_variants.sql');
         const sql = fs.readFileSync(sqlFile, 'utf8');
 
         console.log('🚀 Running migration...');
