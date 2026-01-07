@@ -14,7 +14,7 @@ async function runMigration() {
 
     try {
         const sql = fs.readFileSync(
-            path.join(__dirname, 'migrations', 'add_variant_to_cartitems.sql'),
+            path.join(__dirname, '..', 'database', 'migrations', 'add_variant_to_cartitems.sql'),
             'utf8'
         );
 
