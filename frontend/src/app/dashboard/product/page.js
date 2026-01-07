@@ -4,11 +4,13 @@ import { apiFetch } from "@/lib/api";
 import { getProductImageUrl } from "@/lib/config";
 import ProductSidebar from "./ProductSidebar";
 import ProductForm from "./ProductForm";
+import ProductVariants from "@/components/ProductVariants";
+import MasterDataModal from "@/components/MasterDataModal";
 import Swal from "sweetalert2";
 import {
   Plus, Search, Filter, Trash2, Edit, Package,
   Tag, BarChart3, MoreHorizontal, Image as ImageIcon,
-  LayoutGrid, List as ListIcon, AlertCircle
+  LayoutGrid, List as ListIcon, AlertCircle, Layers
 } from "lucide-react";
 
 export default function ProductsPage() {
@@ -24,6 +26,9 @@ export default function ProductsPage() {
   // Sidebar / Modal State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null); // If null, it's Add Mode
+  const [variantsProductId, setVariantsProductId] = useState(null); // For variants modal
+  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 }); // NEW: Track modal position
+  const [isMasterDataOpen, setIsMasterDataOpen] = useState(false); // NEW: Master data modal
 
   // --- FETCH DATA ---
   const fetchData = async () => {
@@ -171,6 +176,15 @@ export default function ProductsPage() {
             </select>
           </div>
 
+          {/* Master Data Button */}
+          <button
+            onClick={() => setIsMasterDataOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#002B50] hover:bg-[#003d73] text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all"
+          >
+            <Package size={18} />
+            <span className="hidden sm:inline">Master Data</span>
+          </button>
+
           {/* View Toggles */}
           <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button
@@ -186,6 +200,7 @@ export default function ProductsPage() {
               <LayoutGrid size={18} />
             </button>
           </div>
+
         </div>
 
         {/* 3. CONTENT AREA */}
@@ -243,6 +258,26 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const modalWidth = 900;
+                            const viewportWidth = window.innerWidth;
+
+                            // Center modal in viewport horizontally
+                            let left = (viewportWidth - modalWidth) / 2;
+
+                            setModalPosition({
+                              top: rect.bottom + 8,
+                              left: left
+                            });
+                            setVariantsProductId(p.id);
+                          }}
+                          className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
+                          title="Manage Variants"
+                        >
+                          <Layers size={18} />
+                        </button>
                         <button
                           onClick={() => openEditModal(p)}
                           className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
@@ -310,6 +345,39 @@ export default function ProductsPage() {
         onClose={() => setIsSidebarOpen(false)}
         onAdded={fetchData}
         editingProduct={editingProduct} // Need to ensure ProductSidebar handles this prop
+      />
+
+      {/* Variants Modal - Dropdown Style */}
+      {variantsProductId && (
+        <div className="fixed inset-0 z-[9999]" onClick={() => setVariantsProductId(null)}>
+          <div
+            className="absolute bg-white rounded-2xl p-6 w-[900px] max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200"
+            style={{
+              top: `${modalPosition.top}px`,
+              left: `${modalPosition.left}px`
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ProductVariants
+              productId={variantsProductId}
+              onClose={() => setVariantsProductId(null)}
+            />
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setVariantsProductId(null)}
+                className="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Master Data Modal */}
+      <MasterDataModal
+        isOpen={isMasterDataOpen}
+        onClose={() => setIsMasterDataOpen(false)}
       />
 
     </div>

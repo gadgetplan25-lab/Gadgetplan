@@ -11,6 +11,7 @@ const OrderItem = sequelize.define("OrderItem", {
   price: { type: DataTypes.FLOAT, allowNull: false },
   order_id: { type: DataTypes.INTEGER },
   product_id: { type: DataTypes.INTEGER },
+  variant_id: { type: DataTypes.INTEGER, allowNull: true }, // NEW: Track which variant was ordered
   color_id: { type: DataTypes.INTEGER, allowNull: true },
   storage_id: { type: DataTypes.INTEGER, allowNull: true }
 }, {

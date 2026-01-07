@@ -16,6 +16,11 @@ const Order = sequelize.define("Order", {
     type: DataTypes.FLOAT,
     allowNull: false
   },
+  payment_method: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  },
+
   tracking_number: {
     type: DataTypes.STRING,
     allowNull: true

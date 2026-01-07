@@ -26,6 +26,7 @@ const ProductColor = require("./productColor");
 const Wishlist = require("./wishlist"); // Fixed: was ./Wishlist
 const ProductReview = require("./productReview"); // Fixed: was ./ProductReview
 const ProductStorage = require("./productStorage");
+const ProductVariant = require("./productVariant");
 
 
 Product.belongsToMany(Tag, { through: ProductTag, foreignKey: "productId", as: "tags" });
@@ -42,6 +43,21 @@ Color.belongsToMany(Product, { through: ProductColor, foreignKey: "colorId", as:
 Product.belongsToMany(Storage, { through: ProductStorage, foreignKey: "productId", as: "storages" });
 Storage.belongsToMany(Product, { through: ProductStorage, foreignKey: "storageId", as: "products" });
 
+// Product Variants relations
+Product.hasMany(ProductVariant, { foreignKey: "product_id", as: "variants", onDelete: "CASCADE" });
+ProductVariant.belongsTo(Product, { foreignKey: "product_id" });
+ProductVariant.belongsTo(Color, { foreignKey: "color_id" });
+ProductVariant.belongsTo(Storage, { foreignKey: "storage_id" });
+
+// CartItem to ProductVariant relation
+CartItem.belongsTo(ProductVariant, { foreignKey: "variant_id" });
+ProductVariant.hasMany(CartItem, { foreignKey: "variant_id" });
+
+// OrderItem to ProductVariant relation
+OrderItem.belongsTo(ProductVariant, { foreignKey: "variant_id" });
+ProductVariant.hasMany(OrderItem, { foreignKey: "variant_id" });
+
+
 // Wishlist relations
 Wishlist.belongsTo(User, { foreignKey: 'user_id' });
 Wishlist.belongsTo(Product, { foreignKey: 'product_id' });
@@ -52,7 +68,7 @@ const models = {
   User, Category, Product, ProductImage, Order, OrderItem,
   Payment, Technician, Booking, BookingPayment, ServiceType,
   Cart, CartItem, Otp, Device, Blog, BlogContent, Tag, ProductTag, Color, Storage,
-  ProductColor, ProductStorage, Wishlist, ProductReview
+  ProductColor, ProductStorage, Wishlist, ProductReview, ProductVariant
 };
 
 

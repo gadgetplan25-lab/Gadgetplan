@@ -26,6 +26,7 @@ const tagRoutes = require("./routes/tagRoutes");
 const colorRoutes = require("./routes/colorRoutes");
 const storageRoutes = require("./routes/storageRoutes");
 const wishlistReviewRoutes = require("./routes/wishlistReviewRoutes");
+const variantRoutes = require("./routes/variantRoutes");
 
 
 const app = express();
@@ -152,6 +153,7 @@ app.use("/api/tags", tagRoutes);
 app.use("/api/colors", colorRoutes);
 app.use("/api/storages", storageRoutes);
 app.use("/api/user", wishlistReviewRoutes);
+app.use("/api/variants", variantRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

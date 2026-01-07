@@ -21,6 +21,9 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedStorage, setSelectedStorage] = useState("");
+  const [selectedVariant, setSelectedVariant] = useState(null); // NEW: Selected variant
+  const [displayPrice, setDisplayPrice] = useState(0); // NEW: Dynamic price
+  const [displayStock, setDisplayStock] = useState(0); // NEW: Dynamic stock
   const [count, setCount] = useState(1);
   const [cartCount, setCartCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +51,19 @@ export default function ProductDetailPage() {
       try {
         const res = await apiFetch(`/user/products/${id}`, { method: "GET" });
         setProduct(res.product);
+
+        // Set initial price & stock
+        if (res.product.variants && res.product.variants.length > 0) {
+          // Jika ada variants, ambil harga terendah
+          const minPrice = Math.min(...res.product.variants.map(v => v.price));
+          setDisplayPrice(minPrice);
+          const totalStock = res.product.variants.reduce((sum, v) => sum + v.stock, 0);
+          setDisplayStock(totalStock);
+        } else {
+          // Jika tidak ada variants, pakai harga & stok produk
+          setDisplayPrice(res.product.price);
+          setDisplayStock(res.product.stock);
+        }
       } catch (err) {
         console.error("❌ Gagal fetch produk:", err);
         Swal.fire("Error", "Gagal memuat detail produk", "error");
@@ -75,6 +91,29 @@ export default function ProductDetailPage() {
     };
     if (id) checkWishlistStatus();
   }, [id]);
+
+  // 🔹 NEW: Handle variant selection - update price & stock
+  useEffect(() => {
+    if (!product || !product.variants || product.variants.length === 0) return;
+
+    // Cari variant yang sesuai dengan warna & storage yang dipilih
+    const variant = product.variants.find(v =>
+      v.color_id === selectedColor && v.storage_id === selectedStorage
+    );
+
+    if (variant) {
+      setSelectedVariant(variant);
+      setDisplayPrice(variant.price);
+      setDisplayStock(variant.stock);
+    } else if (selectedColor || selectedStorage) {
+      // Jika salah satu dipilih tapi belum lengkap, reset ke default
+      setSelectedVariant(null);
+      const minPrice = Math.min(...product.variants.map(v => v.price));
+      setDisplayPrice(minPrice);
+      const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+      setDisplayStock(totalStock);
+    }
+  }, [selectedColor, selectedStorage, product]);
 
   // 🔹 Ambil profil user
   useEffect(() => {
@@ -104,17 +143,22 @@ export default function ProductDetailPage() {
 
   // 🔹 Tambah ke keranjang
   const handleAddToCart = async () => {
-    // Validasi dinamis: hanya cek varian yang memang ada
-    const hasColors = product.colors?.length > 0;
-    const hasStorages = product.storages?.length > 0;
+    // Validasi: Jika produk punya variants, user HARUS pilih variant
+    const hasVariants = product.variants && product.variants.length > 0;
 
-    if (hasColors && !selectedColor) {
-      Swal.fire("Pilih Warna", "Silakan pilih warna terlebih dahulu.", "warning");
+    if (hasVariants && !selectedVariant) {
+      Swal.fire("Pilih Variant", "Silakan pilih warna dan kapasitas terlebih dahulu.", "warning");
       return;
     }
 
-    if (hasStorages && !selectedStorage) {
-      Swal.fire("Pilih Kapasitas", "Silakan pilih kapasitas penyimpanan terlebih dahulu.", "warning");
+    // Cek stok
+    if (displayStock === 0) {
+      Swal.fire("Stok Habis", "Produk ini sedang tidak tersedia.", "error");
+      return;
+    }
+
+    if (count > displayStock) {
+      Swal.fire("Stok Tidak Cukup", `Stok tersedia hanya ${displayStock} unit.`, "warning");
       return;
     }
 
@@ -122,8 +166,7 @@ export default function ProductDetailPage() {
       const body = {
         product_id: product.id,
         quantity: count,
-        color_id: selectedColor || null,
-        storage_id: selectedStorage || null,
+        variant_id: selectedVariant?.id || null, // NEW: Send variant_id
       };
 
       await apiFetch("/cart/add", {
@@ -195,17 +238,22 @@ export default function ProductDetailPage() {
 
   // Beli Sekarang - langsung checkout ke WhatsApp
   const handleBuyNow = async () => {
-    // Validasi dinamis: hanya cek varian yang memang ada
-    const hasColors = product.colors?.length > 0;
-    const hasStorages = product.storages?.length > 0;
+    // Validasi: Jika produk punya variants, user HARUS pilih variant
+    const hasVariants = product.variants && product.variants.length > 0;
 
-    if (hasColors && !selectedColor) {
-      Swal.fire("Pilih Warna", "Silakan pilih warna terlebih dahulu.", "warning");
+    if (hasVariants && !selectedVariant) {
+      Swal.fire("Pilih Variant", "Silakan pilih warna dan kapasitas terlebih dahulu.", "warning");
       return;
     }
 
-    if (hasStorages && !selectedStorage) {
-      Swal.fire("Pilih Kapasitas", "Silakan pilih kapasitas penyimpanan terlebih dahulu.", "warning");
+    // Cek stok
+    if (displayStock === 0) {
+      Swal.fire("Stok Habis", "Produk ini sedang tidak tersedia.", "error");
+      return;
+    }
+
+    if (count > displayStock) {
+      Swal.fire("Stok Tidak Cukup", `Stok tersedia hanya ${displayStock} unit.`, "warning");
       return;
     }
 
@@ -220,8 +268,7 @@ export default function ProductDetailPage() {
             {
               product_id: product.id,
               quantity: count,
-              color_id: selectedColor || null,
-              storage_id: selectedStorage || null,
+              variant_id: selectedVariant?.id || null, // NEW: Send variant_id
             },
           ],
           payment_method: "whatsapp",
@@ -232,16 +279,15 @@ export default function ProductDetailPage() {
         // Siapkan pesan WhatsApp
         const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE;
         const orderId = res.order.id;
-        const totalBayar = (product.price * count).toLocaleString("id-ID");
+        const totalBayar = (displayPrice * count).toLocaleString("id-ID"); // Use displayPrice
         const customerName = user?.user?.name || user?.name || "Customer";
 
         const messageRaw = `Halo Admin, saya ingin konfirmasi pesanan baru.\\n\\n` +
           `Order ID: *#${orderId}*\\n` +
           `Nama: ${customerName}\\n` +
           `Produk: ${product.name} (${count}x)\\n` +
-          `Total Produk: Rp ${totalBayar}\\n` +
-          `(Belum termasuk ongkir)\\n\\n` +
-          `Mohon info total pembayaran + ongkir. Terima kasih.`;
+          `Total Produk: Rp ${totalBayar}\\n\\n` +
+          `Mohon info pembayaran selanjutnya. Terima kasih.`;
 
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
 
@@ -349,52 +395,77 @@ export default function ProductDetailPage() {
             <p className="text-gray-600 text-sm sm:text-base mb-3 sm:mb-4 leading-relaxed">
               {product.description || "Tidak ada deskripsi untuk produk ini."}
             </p>
-            <p className="text-xl sm:text-2xl font-semibold text-[#002B50] mb-1">
-              Rp {product.price?.toLocaleString("id-ID")}
+            <p className="text-xl sm:text-2xl font-bold text-[#002B50] mb-1">
+              Rp {Number(displayPrice).toLocaleString("id-ID")}
             </p>
-            <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">Stok tersedia ({product.stock})</p>
+            <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">
+              Stok tersedia ({displayStock})
+              {selectedVariant && <span className="ml-2 text-green-600 font-semibold">✓ Variant dipilih</span>}
+            </p>
 
             {/* Pilihan Warna */}
-            {product.colors?.length > 0 && (
-              <div className="mb-3 sm:mb-4">
-                <h2 className="text-sm sm:text-md font-semibold mb-2">Warna</h2>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color.id}
-                      onClick={() => setSelectedColor(color.id)}
-                      className={`px-3 sm:px-4 py-2 min-h-[44px] border rounded-lg border-[#B5C9DA] text-[#002B50] font-semibold cursor-pointer transition text-sm sm:text-base ${selectedColor === color.id
-                        ? "bg-[#002B50] text-white border-[#002B50]"
-                        : "bg-white hover:bg-gray-100"
-                        }`}
-                    >
-                      {color.name}
-                    </button>
-                  ))}
+            {product.variants && product.variants.length > 0 && (() => {
+              // Extract unique colors from variants
+              const uniqueColors = Array.from(
+                new Map(
+                  product.variants
+                    .filter(v => v.Color)
+                    .map(v => [v.Color.id, v.Color])
+                ).values()
+              );
+
+              return uniqueColors.length > 0 && (
+                <div className="mb-3 sm:mb-4">
+                  <h2 className="text-sm sm:text-md font-semibold mb-2">Warna</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueColors.map((color) => (
+                      <button
+                        key={color.id}
+                        onClick={() => setSelectedColor(color.id)}
+                        className={`px-3 sm:px-4 py-2 min-h-[44px] border rounded-lg border-[#B5C9DA] text-[#002B50] font-semibold cursor-pointer transition text-sm sm:text-base ${selectedColor === color.id
+                          ? "bg-[#002B50] text-white border-[#002B50]"
+                          : "bg-white hover:bg-gray-100"
+                          }`}
+                      >
+                        {color.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Pilihan Storage */}
-            {product.storages?.length > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <h2 className="text-sm sm:text-md font-semibold mb-2">Kapasitas Penyimpanan</h2>
-                <div className="flex flex-wrap gap-2">
-                  {product.storages.map((storage) => (
-                    <button
-                      key={storage.id}
-                      onClick={() => setSelectedStorage(storage.id)}
-                      className={`px-4 py-2 border rounded-lg transition border-[#B5C9DA] text-[#002B50] font-semibold cursor-pointer ${selectedStorage === storage.id
-                        ? "bg-[#002B50] text-white border-[#002B50]"
-                        : "bg-white hover:bg-gray-100"
-                        }`}
-                    >
-                      {storage.name}
-                    </button>
-                  ))}
+            {product.variants && product.variants.length > 0 && (() => {
+              // Extract unique storages from variants
+              const uniqueStorages = Array.from(
+                new Map(
+                  product.variants
+                    .filter(v => v.Storage)
+                    .map(v => [v.Storage.id, v.Storage])
+                ).values()
+              );
+
+              return uniqueStorages.length > 0 && (
+                <div className="mb-4 sm:mb-6">
+                  <h2 className="text-sm sm:text-md font-semibold mb-2">Kapasitas Penyimpanan</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {uniqueStorages.map((storage) => (
+                      <button
+                        key={storage.id}
+                        onClick={() => setSelectedStorage(storage.id)}
+                        className={`px-4 py-2 border rounded-lg transition border-[#B5C9DA] text-[#002B50] font-semibold cursor-pointer ${selectedStorage === storage.id
+                          ? "bg-[#002B50] text-white border-[#002B50]"
+                          : "bg-white hover:bg-gray-100"
+                          }`}
+                      >
+                        {storage.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Jumlah */}
             <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">

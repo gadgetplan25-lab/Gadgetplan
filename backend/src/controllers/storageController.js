@@ -21,10 +21,10 @@ exports.getStorageById = async (req, res) => {
 
 exports.addStorage = async (req, res) => {
   try {
-    const { size } = req.body;
-    if (!size) return res.status(400).json({ message: "Ukuran wajib diisi" });
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Nama storage wajib diisi" });
 
-    const storage = await Storage.create({ size });
+    const storage = await Storage.create({ name });
     res.status(201).json(storage);
   } catch (err) {
     res.status(500).json({ message: "Gagal menambahkan storage", error: err.message });
@@ -33,11 +33,11 @@ exports.addStorage = async (req, res) => {
 
 exports.updateStorage = async (req, res) => {
   try {
-    const { size } = req.body;
+    const { name } = req.body;
     const storage = await Storage.findByPk(req.params.id);
     if (!storage) return res.status(404).json({ message: "Storage tidak ditemukan" });
 
-    storage.size = size || storage.size;
+    storage.name = name || storage.name;
     await storage.save();
     res.json(storage);
   } catch (err) {

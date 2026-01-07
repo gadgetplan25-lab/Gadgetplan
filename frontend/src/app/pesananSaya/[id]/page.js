@@ -158,88 +158,17 @@ export default function OrderDetailPage() {
                         </div>
                     </div>
 
-                    {/* Shipping Info Card */}
-                    {order.shipping_detail && (
-                        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                            <h2 className="text-xl font-semibold mb-4 text-gray-800">Informasi Pengiriman</h2>
-                            {typeof order.shipping_detail === 'string' ? (
-                                (() => {
-                                    try {
-                                        const shippingData = JSON.parse(order.shipping_detail);
-                                        return (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <p className="text-gray-600 text-sm">Kurir</p>
-                                                    <p className="font-semibold text-gray-800">{shippingData.courier || "-"}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-600 text-sm">Service</p>
-                                                    <p className="font-semibold text-gray-800">{shippingData.service || "-"}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-600 text-sm">Estimasi Pengiriman</p>
-                                                    <p className="font-semibold text-gray-800">{shippingData.etd || "-"} hari</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-600 text-sm">Biaya Pengiriman</p>
-                                                    <p className="font-semibold text-gray-800">
-                                                        Rp {order.shipping_cost?.toLocaleString("id-ID") || 0}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        );
-                                    } catch (e) {
-                                        return <p className="text-gray-600">Data pengiriman tidak tersedia</p>;
-                                    }
-                                })()
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-gray-600 text-sm">Kurir</p>
-                                        <p className="font-semibold text-gray-800">{order.shipping_detail?.courier || "-"}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600 text-sm">Service</p>
-                                        <p className="font-semibold text-gray-800">{order.shipping_detail?.service || "-"}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600 text-sm">Estimasi Pengiriman</p>
-                                        <p className="font-semibold text-gray-800">{order.shipping_detail?.etd || "-"} hari</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-600 text-sm">Biaya Pengiriman</p>
-                                        <p className="font-semibold text-gray-800">
-                                            Rp {order.shipping_cost?.toLocaleString("id-ID") || 0}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+
 
                     {/* Total Card */}
                     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                         <h2 className="text-xl font-semibold mb-4 text-gray-800">Ringkasan Pembayaran</h2>
                         <div className="space-y-2">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Subtotal Produk</span>
-                                <span className="font-semibold text-gray-800">
-                                    Rp {((order.total_price || 0) - (order.shipping_cost || 0))?.toLocaleString("id-ID")}
+                            <div className="flex justify-between items-center">
+                                <span className="text-lg font-bold text-gray-800">Total Pembayaran</span>
+                                <span className="text-lg font-bold text-blue-900">
+                                    Rp {order.total_price?.toLocaleString("id-ID")}
                                 </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Biaya Pengiriman</span>
-                                <span className="font-semibold text-gray-800">
-                                    Rp {order.shipping_cost?.toLocaleString("id-ID") || 0}
-                                </span>
-                            </div>
-                            <div className="border-t pt-2 mt-2">
-                                <div className="flex justify-between">
-                                    <span className="text-lg font-bold text-gray-800">Total Pembayaran</span>
-                                    <span className="text-lg font-bold text-blue-900">
-                                        Rp {order.total_price?.toLocaleString("id-ID")}
-                                    </span>
-                                </div>
                             </div>
                         </div>
                     </div>

@@ -142,7 +142,16 @@ exports.checkout = async (req, res) => {
 
     const cartItems = await CartItem.findAll({
       where: { id: cart_item_ids, cart_id: cart.id },
-      include: [Product],
+      include: [
+        Product,
+        {
+          model: require("../models").ProductVariant,
+          include: [
+            { model: require("../models").Color },
+            { model: require("../models").Storage }
+          ]
+        }
+      ],
       transaction: t,
       lock: true, // lock row
     });
@@ -151,45 +160,60 @@ exports.checkout = async (req, res) => {
 
     let totalPrice = 0;
     for (const item of cartItems) {
-      if (item.quantity > item.Product.stock) {
-        throw new Error(`Stok produk ${item.Product.name} tidak cukup`);
+      // Use variant stock if variant exists, otherwise use product stock
+      const stock = item.ProductVariant ? item.ProductVariant.stock : item.Product.stock;
+
+      if (item.quantity > stock) {
+        const productName = item.Product.name;
+        const variantInfo = item.ProductVariant
+          ? ` (${item.ProductVariant.Color?.name || ''} ${item.ProductVariant.Storage?.name || ''})`.trim()
+          : '';
+        throw new Error(`Stok produk ${productName}${variantInfo} tidak cukup`);
       }
-      totalPrice += item.quantity * item.Product.price;
+
+      // Use variant price if exists, otherwise use product price
+      const price = item.ProductVariant ? item.ProductVariant.price : item.Product.price;
+      totalPrice += item.quantity * price;
     }
 
-    // Ongkir dari frontend atau default 0 (manual)
-    let shippingCost = 0;
-    let shippingDetail = null;
-    if (shipping_cost && shipping_detail) {
-      shippingCost = Number(shipping_cost);
-      shippingDetail = shipping_detail;
-    }
+
 
 
     // Buat order
     const order = await Order.create({
       user_id,
       status: "pending",
-      total_price: totalPrice + shippingCost,
+      total_price: totalPrice, // Hanya harga produk
       payment_method,
-      shipping_cost: shippingCost,
+      // shipping_cost & detail dihapus (manual by admin)
     }, { transaction: t });
 
     // Buat order item + update stok
     for (const item of cartItems) {
+      // Use variant price if exists
+      const price = item.ProductVariant ? item.ProductVariant.price : item.Product.price;
+
       await OrderItem.create(
         {
           order_id: order.id,
           product_id: item.Product.id,
+          variant_id: item.variant_id || null, // NEW: Save variant_id
           quantity: item.quantity,
-          price: item.Product.price,
+          price: price, // Use correct price
         },
         { transaction: t }
       );
 
-      // Kurangi stok
-      item.Product.stock -= item.quantity;
-      await item.Product.save({ transaction: t });
+      // Update stock - variant stock if variant exists, otherwise product stock
+      if (item.ProductVariant) {
+        // Update variant stock
+        item.ProductVariant.stock -= item.quantity;
+        await item.ProductVariant.save({ transaction: t });
+      } else {
+        // Update product stock
+        item.Product.stock -= item.quantity;
+        await item.Product.save({ transaction: t });
+      }
     }
 
     // Hapus item dari keranjang
@@ -206,7 +230,7 @@ exports.checkout = async (req, res) => {
     await Payment.create({
       order_id: order.id,
       transaction_id: `MANUAL-${uuidv4()}`,
-      amount: totalPrice + shippingCost,
+      amount: totalPrice, // Hanya harga produk
       status: "pending",
       method: payment_method || "whatsapp",
     });
@@ -218,8 +242,6 @@ exports.checkout = async (req, res) => {
       message: "Checkout berhasil",
       order,
       invoice_url: null,
-      shipping_cost: shippingCost,
-      shipping_detail: shippingDetail,
     });
   } catch (error) {
     await t.rollback();
@@ -243,6 +265,13 @@ exports.getCart = async (req, res) => {
           {
             model: Product,
             include: ['ProductImages'] // ✅ Include gambar produk
+          },
+          {
+            model: require("../models").ProductVariant, // NEW: Include variant
+            include: [
+              { model: require("../models").Color, attributes: ["id", "name"] },
+              { model: require("../models").Storage, attributes: ["id", "name"] }
+            ]
           }
         ],
       },
@@ -264,15 +293,11 @@ exports.addItem = async (req, res) => {
   const t = await Cart.sequelize.transaction();
   try {
     const user_id = req.user.id;
-    const { product_id, quantity, color_id, storage_id } = req.body;
+    const { product_id, quantity, variant_id } = req.body; // NEW: Accept variant_id
 
     if (!product_id || !quantity || quantity < 1) {
       return res.status(400).json({ message: "Product dan quantity harus diisi" });
     }
-
-    // PERBAIKAN: Hapus validasi ketat untuk color_id dan storage_id
-    // Karena tidak semua produk punya varian warna/storage
-    // Frontend sudah mengirim null jika tidak ada varian
 
     let cart = await Cart.findOne({ where: { user_id }, transaction: t });
     if (!cart) cart = await Cart.create({ user_id }, { transaction: t });
@@ -280,15 +305,35 @@ exports.addItem = async (req, res) => {
     const product = await Product.findByPk(product_id, { transaction: t });
     if (!product) return res.status(404).json({ message: "Produk tidak ditemukan" });
 
-    // Temukan atau buat CartItem berdasarkan kombinasi unik (produk + warna + storage)
+    // NEW: Get price from variant if variant_id is provided
+    let itemPrice = product.price;
+    let color_id = null;
+    let storage_id = null;
+
+    if (variant_id) {
+      const { ProductVariant } = require("../models");
+      const variant = await ProductVariant.findByPk(variant_id, { transaction: t });
+      if (!variant) {
+        return res.status(404).json({ message: "Variant tidak ditemukan" });
+      }
+      itemPrice = variant.price;
+      color_id = variant.color_id;
+      storage_id = variant.storage_id;
+    }
+
+    // Temukan atau buat CartItem berdasarkan kombinasi unik (produk + variant)
     const [cartItem, created] = await CartItem.findOrCreate({
       where: {
         cart_id: cart.id,
         product_id,
-        color_id: color_id || null,
-        storage_id: storage_id || null
+        variant_id: variant_id || null, // NEW: Use variant_id as unique identifier
       },
-      defaults: { quantity, price: product.price },
+      defaults: {
+        quantity,
+        price: itemPrice,
+        color_id,
+        storage_id
+      },
       transaction: t,
     });
 

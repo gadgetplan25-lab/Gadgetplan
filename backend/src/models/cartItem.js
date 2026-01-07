@@ -23,6 +23,10 @@ const CartItem = sequelize.define("CartItem", {
     type: DataTypes.INTEGER,
     allowNull: true, // PERBAIKAN: Boleh null untuk produk tanpa varian storage
   },
+  variant_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true, // NEW: Boleh null untuk produk tanpa variant
+  },
 }, {
   tableName: 'cartitems',
   timestamps: true,

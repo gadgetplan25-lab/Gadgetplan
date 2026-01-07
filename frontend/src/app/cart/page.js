@@ -17,8 +17,6 @@ export default function CartPage() {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cartCount, setCartCount] = useState(0);
-  const [shippingCost, setShippingCost] = useState(null);
-  const [shippingDetail, setShippingDetail] = useState(null);
   const [user, setUser] = useState(null);
   const [address, setAddress] = useState("");
 
@@ -27,7 +25,10 @@ export default function CartPage() {
     selectedItems.includes(item.id)
   );
   const total = selectedCartItems.reduce(
-    (sum, item) => sum + item.Product.price * item.quantity,
+    (sum, item) => {
+      const itemPrice = item.ProductVariant?.price || item.Product.price;
+      return sum + itemPrice * item.quantity;
+    },
     0
   );
 
@@ -47,7 +48,7 @@ export default function CartPage() {
     fetchCart();
   }, [loading]);
 
-  // Ambil user & address untuk ongkir
+  // Ambil data user & address
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -68,8 +69,6 @@ export default function CartPage() {
     };
     fetchUser();
   }, []);
-
-  // Ongkir manual - admin akan kasih tau via WhatsApp
 
   // Toggle checkbox
   const toggleSelect = (itemId) => {
@@ -247,11 +246,26 @@ export default function CartPage() {
                     <h2 className="font-semibold text-sm sm:text-base md:text-lg text-gray-800 truncate">
                       {item.Product?.name}
                     </h2>
-                    <p className="text-gray-600 text-xs sm:text-sm md:text-base">
-                      Rp. {item.Product?.price.toLocaleString("id-ID")}
+                    {/* NEW: Display variant info if exists */}
+                    {item.ProductVariant && (
+                      <div className="flex gap-2 mt-1">
+                        {item.ProductVariant.Color && (
+                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                            {item.ProductVariant.Color.name}
+                          </span>
+                        )}
+                        {item.ProductVariant.Storage && (
+                          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                            {item.ProductVariant.Storage.name}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-gray-600 text-xs sm:text-sm md:text-base mt-1">
+                      Rp. {(item.ProductVariant?.price || item.Product?.price).toLocaleString("id-ID")}
                     </p>
                     <p className="text-xs sm:text-sm text-emerald-600">
-                      Stock: {item.Product?.stock}
+                      Stock: {item.ProductVariant?.stock || item.Product?.stock}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -331,22 +345,35 @@ export default function CartPage() {
                 {selectedCartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex justify-between items-center border-b py-2"
+                    className="flex justify-between items-start border-b py-2"
                   >
-                    <span>
-                      {item.Product?.name} x {item.quantity}
-                    </span>
-                    <span>
+                    <div className="flex-1">
+                      <span className="font-medium">{item.Product?.name} x {item.quantity}</span>
+                      {/* NEW: Display variant in modal */}
+                      {item.ProductVariant && (
+                        <div className="flex gap-1 mt-1">
+                          {item.ProductVariant.Color && (
+                            <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                              {item.ProductVariant.Color.name}
+                            </span>
+                          )}
+                          {item.ProductVariant.Storage && (
+                            <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">
+                              {item.ProductVariant.Storage.name}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <span className="font-semibold">
                       Rp.{" "}
-                      {(item.Product?.price * item.quantity).toLocaleString("id-ID")}
+                      {((item.ProductVariant?.price || item.Product?.price) * item.quantity).toLocaleString("id-ID")}
                     </span>
                   </div>
                 ))}
               </div>
-              {/* Total tanpa ongkir - ongkir akan diinfokan admin via WA */}
               <div className="mb-3">
-                <p><strong>Total Produk:</strong> Rp {total.toLocaleString("id-ID")}</p>
-                <p className="text-xs text-gray-500 mt-1">*Ongkir akan diinfokan oleh admin via WhatsApp</p>
+                <p><strong>Total Pembayaran:</strong> Rp {total.toLocaleString("id-ID")}</p>
               </div>
               <div className="flex gap-4 mt-4">
                 <Button

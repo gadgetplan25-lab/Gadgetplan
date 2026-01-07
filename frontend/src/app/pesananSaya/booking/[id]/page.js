@@ -61,13 +61,13 @@ export default function BookingDetailPage() {
     };
 
     const handlePayDP = () => {
-        const messageRaw = `Halo Admin, saya mau bayar DP Booking Service *#${booking.id}* sebesar Rp ${dpAmount.toLocaleString("id-ID")}. Mohon infonya.`;
+        const messageRaw = `Halo Admin, saya ingin konfirmasi pembayaran DP untuk Booking Service *#${booking.id}* sebesar Rp ${dpAmount.toLocaleString("id-ID")}.\n\nMohon info rekening untuk pembayaran DP. Terima kasih.`;
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
         window.open(waLink, "_blank");
     }
 
     const handlePayFull = () => {
-        const messageRaw = `Halo Admin, saya mau melunasi pembayaran Booking Service *#${booking.id}*. Mohon infonya.`;
+        const messageRaw = `Halo Admin, saya ingin melunasi pembayaran Booking Service *#${booking.id}*.\n\nMohon info rekening untuk pelunasan. Terima kasih.`;
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
         window.open(waLink, "_blank");
     }

@@ -1,4 +1,4 @@
-const { Product, ProductImage, Tag, Color, Storage } = require("../models");
+const { Product, ProductImage, Tag, Color, Storage, ProductVariant } = require("../models");
 const Category = require("../models/category");
 const path = require("path");
 const { Op } = require("sequelize");
@@ -184,7 +184,15 @@ exports.getAllProducts = async (req, res) => {
         { model: Color, as: "colors", through: { attributes: [] } },
         { model: Storage, as: "storages", through: { attributes: [] } },
         { model: Category, attributes: ["id", "name"] },
-        { model: ProductImage, attributes: ["id", "image_url"] }
+        { model: ProductImage, attributes: ["id", "image_url"] },
+        {
+          model: ProductVariant,
+          as: "variants",
+          include: [
+            { model: Color, attributes: ["id", "name"] },
+            { model: Storage, attributes: ["id", "name"] }
+          ]
+        }
       ]
     });
     res.json({ products });
@@ -238,7 +246,15 @@ exports.getProductById = async (req, res) => {
         { model: Color, as: "colors", through: { attributes: [] } },
         { model: Storage, as: "storages", through: { attributes: [] } },
         { model: Category, attributes: ["id", "name"] },
-        { model: ProductImage, attributes: ["id", "image_url"] }
+        { model: ProductImage, attributes: ["id", "image_url"] },
+        {
+          model: ProductVariant,
+          as: "variants",
+          include: [
+            { model: Color, attributes: ["id", "name"] },
+            { model: Storage, attributes: ["id", "name"] }
+          ]
+        }
       ],
     });
 

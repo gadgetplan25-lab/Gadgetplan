@@ -97,14 +97,12 @@ function PesananSayaContent() {
     const adminPhone = process.env.NEXT_PUBLIC_ADMIN_PHONE;
 
     // Ambil pesanan
-    // Ambil pesanan
-
     apiFetch("/user/orders").then((res) => {
       const orders = (res.orders || []).map((o) => {
         const productNames = o.OrderItems?.map(item => `- ${item.Product?.name} (${item.quantity}x)`).join('\n') || '-';
         const totalBayar = o.total_price?.toLocaleString("id-ID");
 
-        const messageRaw = `Halo Admin, saya mau bayar pesanan *#${o.id}*.\n\nDetail:\n${productNames}\nTotal: Rp ${totalBayar}\n\nMohon infonya.`;
+        const messageRaw = `Halo Admin, saya ingin konfirmasi pembayaran untuk pesanan *#${o.id}*.\n\nDetail:\n${productNames}\nTotal: Rp ${totalBayar}\n\nMohon info rekening untuk pembayaran. Terima kasih.`;
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
 
         return {
@@ -122,10 +120,8 @@ function PesananSayaContent() {
     apiFetch("/booking/getBookings").then((res) => {
       const bookings = (res.bookings || []).map((b) => {
         const dpAmount = b.BookingPayments?.[0]?.amount || 0;
-        const messageRaw = `Halo Admin, saya mau bayar DP Booking Service *#${b.id}* sebesar Rp ${dpAmount.toLocaleString("id-ID")}. Mohon infonya.`;
+        const messageRaw = `Halo Admin, saya ingin konfirmasi pembayaran DP untuk Booking Service *#${b.id}* sebesar Rp ${dpAmount.toLocaleString("id-ID")}.\n\nMohon info rekening untuk pembayaran DP. Terima kasih.`;
         const waLink = `https://wa.me/${adminPhone}?text=${encodeURIComponent(messageRaw)}`;
-
-
 
         return {
           ...b,
