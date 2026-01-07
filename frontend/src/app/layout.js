@@ -17,14 +17,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://gadgetplan.com'),
+  metadataBase: new URL('https://gadgetplan.id'),
   title: {
     default: 'GadgetPlan - Toko iPhone Premium & Service Bergaransi',
     template: '%s | GadgetPlan'
   },
   description: 'Jual iPhone original, MacBook, aksesoris Apple premium, dan layanan service iPhone bergaransi di Sukabumi. Harga terbaik, kualitas terjamin, teknisi berpengalaman.',
   keywords: ['iPhone', 'MacBook', 'Apple', 'Service iPhone', 'Aksesoris Apple', 'Toko iPhone Sukabumi', 'iPhone Original', 'Service iPhone Bergaransi', 'Jual iPhone', 'Toko Apple'],
-  authors: [{ name: 'GadgetPlan', url: 'https://gadgetplan.com' }],
+  authors: [{ name: 'GadgetPlan', url: 'https://gadgetplan.id' }],
   creator: 'GadgetPlan',
   publisher: 'GadgetPlan',
   formatDetection: {
@@ -35,7 +35,7 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'id_ID',
-    url: 'https://gadgetplan.com',
+    url: 'https://gadgetplan.id',
     siteName: 'GadgetPlan',
     title: 'GadgetPlan - Toko iPhone Premium & Service Bergaransi',
     description: 'Jual iPhone original, MacBook, aksesoris Apple premium, dan layanan service iPhone bergaransi. Harga terbaik, kualitas terjamin.',
@@ -68,12 +68,10 @@ export const metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
-    // yandex: 'your-yandex-verification-code',
-    // yahoo: 'your-yahoo-verification-code',
+    google: 'Js9xCgHPI-XlsQ40RZPsQgLh7E4M_5RPWlV44SIdUBA',
   },
   alternates: {
-    canonical: 'https://gadgetplan.com',
+    canonical: 'https://gadgetplan.id',
   },
   category: 'technology',
   icons: {
@@ -88,8 +86,8 @@ export default function RootLayout({ children }) {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "GadgetPlan",
-    "url": "https://gadgetplan.com",
-    "logo": "https://gadgetplan.com/logo.png",
+    "url": "https://gadgetplan.id",
+    "logo": "https://gadgetplan.id/logo.png",
     "description": "Toko iPhone Premium & Service Bergaransi di Sukabumi",
     "address": {
       "@type": "PostalAddress",
