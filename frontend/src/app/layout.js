@@ -75,9 +75,12 @@ export const metadata = {
   },
   category: 'technology',
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: [
+      { url: '/favicon2.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-1.png', sizes: '192x192', type: 'image/png' }
+    ],
+    shortcut: '/favicon2.png',
+    apple: '/favicon3.png',
   },
 };
 
@@ -123,9 +126,9 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
         {/* Favicon - Explicit declaration to override cache */}
-        <link rel="icon" href="/favicon.png?v=2" sizes="any" />
-        <link rel="icon" type="image/png" href="/favicon.png?v=2" />
-        <link rel="shortcut icon" href="/favicon.png?v=2" />
+        <link rel="icon" href="/favicon2.png?v=1" sizes="32x32" type="image/png" />
+        <link rel="icon" href="/favicon-1.png?v=1" sizes="192x192" type="image/png" />
+        <link rel="shortcut icon" href="/favicon2.png?v=1" />
 
         {/* Viewport optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
@@ -165,18 +168,6 @@ export default function RootLayout({ children }) {
         />
 
         {children}
-
-        {/* Service Worker Registration */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-          if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-              navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('[SW] Registered:', reg.scope))
-                .catch(err => console.log('[SW] Registration failed:', err));
-            });
-          }
-        `}} />
       </body>
     </html>
   );
