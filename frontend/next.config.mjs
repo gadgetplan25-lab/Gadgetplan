@@ -116,9 +116,6 @@ const nextConfig = {
         // lucide-react removed - handled by optimizePackageImports
     },
 
-    // Output optimization
-    output: 'standalone',
-
     // Performance budgets
     onDemandEntries: {
         maxInactiveAge: 25 * 1000,
