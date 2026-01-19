@@ -2,10 +2,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { apiFetch } from "@/lib/api";
 import { getValidStatusOptions, getStatusLabel } from "@/lib/orderStatusHelper";
+import Swal from "sweetalert2";
 import {
   X, Save, Truck, Package, CreditCard, CheckCircle,
   Clock, Search, Filter, ArrowUpRight, Calendar, User, MapPin,
-  ChevronRight, AlertCircle, ShoppingBag
+  ChevronRight, AlertCircle, ShoppingBag, Trash2
 } from "lucide-react";
 
 // --- CONSTANTS ---
@@ -39,7 +40,7 @@ export default function OrderPage() {
       setOrders(data.orders || []);
       setLoading(false);
     } catch (err) {
-      console.error("❌ Gagal fetch orders:", err);
+      console.error("Gagal fetch orders:", err);
       setLoading(false);
     }
   };
@@ -64,11 +65,17 @@ export default function OrderPage() {
     });
   }, [orders, searchTerm, statusFilter]);
 
+  // --- HELPER: Calculate Real Product Total (No Shipping) ---
+  const calculateProductTotal = (order) => {
+    if (!order.OrderItems) return 0;
+    return order.OrderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  };
+
   // --- STATS ---
   const stats = useMemo(() => {
     return {
       total: orders.length,
-      revenue: orders.reduce((acc, o) => o.status !== 'cancelled' ? acc + (o.total_price || 0) : acc, 0),
+      revenue: orders.reduce((acc, o) => o.status !== 'cancelled' ? acc + calculateProductTotal(o) : acc, 0),
       pending: orders.filter(o => o.status === 'pending').length,
       processing: orders.filter(o => ['paid', 'processing'].includes(o.status)).length
     };
@@ -91,7 +98,7 @@ export default function OrderPage() {
     if (!selectedOrder) return;
 
     if (newStatus === "shipped" && !trackingNumber.trim()) {
-      alert("⚠️ Nomor resi (Tracking ID) wajib diisi untuk status 'Sedang Dikirim'!");
+      alert("Peringatan: Nomor resi (Tracking ID) wajib diisi untuk status 'Sedang Dikirim'!");
       return;
     }
 
@@ -104,14 +111,53 @@ export default function OrderPage() {
         body: JSON.stringify(body),
       });
 
-      alert("✅ Status berhasil diperbarui!");
+      alert("Sukses: Status berhasil diperbarui!");
       closeModal();
       fetchOrders();
     } catch (error) {
-      console.error("❌ Gagal update status:", error);
+      console.error("Gagal update status:", error);
       alert(error.message || "Gagal update status.");
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    const result = await Swal.fire({
+      title: "Hapus Order?",
+      text: "Order yang dihapus tidak dapat dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiFetch(`/admin/orders/${orderId}`, {
+        method: "DELETE",
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Order Dihapus",
+        text: "Order berhasil dihapus.",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      fetchOrders();
+    } catch (error) {
+      console.error("Gagal hapus order:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menghapus",
+        text: error.message || "Gagal menghapus order. Silakan coba lagi.",
+        confirmButtonColor: "#dc2626"
+      });
     }
   };
 
@@ -138,10 +184,10 @@ export default function OrderPage() {
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Order", val: stats.total, icon: ShoppingBag, color: "text-[#002B50]", bg: "bg-blue-50" },
-            { label: "Menunggu Bayar", val: stats.pending, icon: Clock, color: "text-slate-500", bg: "bg-slate-100" },
-            { label: "Perlu Proses", val: stats.processing, icon: Package, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Total Omzet", val: `Rp ${(stats.revenue / 1000000).toFixed(1)}jt`, icon: ArrowUpRight, color: "text-[#002B50]", bg: "bg-slate-200" },
+            { label: "Total Order", val: stats.total, icon: ShoppingBag, color: "text-[#002B50]", bg: "bg-[#002B50]/5" },
+            { label: "Menunggu Bayar", val: stats.pending, icon: Clock, color: "text-[#002B50]", bg: "bg-[#002B50]/5" },
+            { label: "Perlu Proses", val: stats.processing, icon: Package, color: "text-[#002B50]", bg: "bg-[#002B50]/5" },
+            { label: "Total Omzet", val: `Rp ${(stats.revenue / 1000000).toFixed(1)}jt`, icon: ArrowUpRight, color: "text-[#002B50]", bg: "bg-[#002B50]/5" },
           ].map((stat, i) => (
             <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
               <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
@@ -196,7 +242,7 @@ export default function OrderPage() {
                 <th className="px-6 py-4 font-semibold">Order</th>
                 <th className="px-6 py-4 font-semibold">Pelanggan</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Total</th>
+                <th className="px-6 py-4 font-semibold">Total (Produk)</th>
                 <th className="px-6 py-4 font-semibold">Waktu</th>
                 <th className="px-6 py-4 font-semibold text-right">Aksi</th>
               </tr>
@@ -245,7 +291,7 @@ export default function OrderPage() {
                       <StatusBadge status={o.status} />
                     </td>
                     <td className="px-6 py-4 font-medium text-slate-900">
-                      Rp {o.total_price?.toLocaleString("id-ID")}
+                      Rp {calculateProductTotal(o).toLocaleString("id-ID")}
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-500">
                       <div className="flex items-center gap-1.5">
@@ -258,12 +304,22 @@ export default function OrderPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right relative z-10">
-                      <button
-                        onClick={() => openModal(o)}
-                        className="p-2 text-slate-400 hover:text-[#002B50] hover:bg-blue-50 rounded-lg transition-all group-hover:scale-110 active:scale-95"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openModal(o)}
+                          className="p-2 text-slate-400 hover:text-[#002B50] hover:bg-blue-50 rounded-lg transition-all group-hover:scale-110 active:scale-95"
+                          title="Edit Order"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(o.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group-hover:scale-110 active:scale-95"
+                          title="Hapus Order"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -398,9 +454,9 @@ export default function OrderPage() {
                         ))}
                       </div>
                       <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                        <span className="text-sm font-medium text-slate-500">Total Tagihan</span>
+                        <span className="text-sm font-medium text-slate-500">Total Produk</span>
                         <span className="text-xl font-bold text-[#002B50]">
-                          Rp {new Intl.NumberFormat('id-ID').format(selectedOrder.total_price)}
+                          Rp {new Intl.NumberFormat('id-ID').format(calculateProductTotal(selectedOrder))}
                         </span>
                       </div>
                     </div>

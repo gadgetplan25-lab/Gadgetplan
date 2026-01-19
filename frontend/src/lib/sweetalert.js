@@ -48,6 +48,9 @@ export const showLoading = async (title = 'Loading...') => {
     return Swal.fire({
         title,
         allowOutsideClick: false,
+        customClass: {
+            loader: 'custom-loader'
+        },
         didOpen: () => {
             Swal.showLoading();
         },

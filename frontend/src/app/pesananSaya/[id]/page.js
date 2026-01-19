@@ -21,10 +21,6 @@ export default function OrderDetailPage() {
     const fetchOrderDetail = async () => {
         try {
             const data = await apiFetch(`/user/orders/${id}`);
-            console.log("DEBUG Order Data:", data.order);
-            if (data.order?.OrderItems?.[0]?.Product) {
-                console.log("Product Images:", data.order.OrderItems[0].Product.images);
-            }
             setOrder(data.order);
         } catch (error) {
             console.error("Error fetching order:", error);

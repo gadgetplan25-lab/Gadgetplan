@@ -29,7 +29,7 @@ exports.addBlog = async (req, res) => {
       if (c.type === "text" || c.type === "html") {
         await BlogContent.create({
           blog_id: blog.id,
-          type: c.type, // Preserve the original type (text or html)
+          type: c.type || "html", // Default to 'html' if type is empty
           content: c.value,
           position: i + 1,
         });
@@ -101,6 +101,61 @@ exports.getBlogBySlug = async (req, res) => {
   }
 };
 
+exports.getBlogById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const blog = await Blog.findByPk(id, {
+      include: [
+        {
+          model: BlogContent,
+          as: "contents",
+          attributes: ["content", "image_url", "type", "position"],
+        },
+      ],
+      order: [[{ model: BlogContent, as: "contents" }, "position", "ASC"]],
+    });
+
+    if (!blog) return res.status(404).json({ message: "Blog tidak ditemukan" });
+
+    // Combine contents into a single content field for easier editing
+    const blogData = blog.toJSON();
+
+
+
+    // Get all HTML/text content and combine them
+    let finalContent = "";
+
+    if (blogData.contents && blogData.contents.length > 0) {
+      const htmlContents = blogData.contents
+        // FIX: Include empty type ("") as it's how content is stored in DB
+        .filter(c => c.type === "html" || c.type === "text" || c.type === "" || !c.type)
+        .map(c => {
+          // Handle case where content might be null or undefined
+          if (!c.content) return "";
+
+          // If content is already a string, return it
+          if (typeof c.content === "string") return c.content;
+
+          // If content is an object, try to stringify it
+          return JSON.stringify(c.content);
+        });
+
+      finalContent = htmlContents.join("");
+    }
+
+    // Return content in the format expected by frontend
+    // Frontend expects: { content: "[{\"type\":\"html\",\"value\":\"actual html content\"}]" }
+    blogData.content = finalContent;
+
+
+
+    res.json(blogData);
+  } catch (err) {
+    console.error("Error getBlogById:", err);
+    res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
+  }
+};
+
 exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
@@ -125,13 +180,17 @@ exports.updateBlog = async (req, res) => {
     const imageFiles = req.files?.images || [];
     let imgIndex = 0;
 
+
+
     for (let i = 0; i < parsedContent.length; i++) {
       const c = parsedContent[i];
+
+
 
       if (c.type === "text" || c.type === "html") {
         await BlogContent.create({
           blog_id: blog.id,
-          type: c.type, // Preserve the original type (text or html)
+          type: c.type || "html", // Default to 'html' if type is empty
           content: c.value,
           position: i + 1,
         });

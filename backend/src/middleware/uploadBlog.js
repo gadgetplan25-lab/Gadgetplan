@@ -54,8 +54,18 @@ const optimizeImages = async (req, res, next) => {
         .jpeg({ quality: 85, progressive: true })
         .toFile(outputPath);
 
-      // Hapus file temporary
-      fs.unlinkSync(bannerFile.path);
+      // Tunggu sebentar sebelum hapus file (fix EPERM error)
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Hapus file temporary dengan error handling
+      try {
+        if (fs.existsSync(bannerFile.path)) {
+          fs.unlinkSync(bannerFile.path);
+        }
+      } catch (unlinkError) {
+        console.warn('Warning: Could not delete temp file:', bannerFile.path);
+        // Continue anyway, file will be cleaned up later
+      }
 
       optimizedFiles.banner = [{
         filename: outputFilename,
@@ -80,8 +90,18 @@ const optimizeImages = async (req, res, next) => {
           .jpeg({ quality: 85, progressive: true })
           .toFile(outputPath);
 
-        // Hapus file temporary
-        fs.unlinkSync(imageFile.path);
+        // Tunggu sebentar sebelum hapus file (fix EPERM error)
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Hapus file temporary dengan error handling
+        try {
+          if (fs.existsSync(imageFile.path)) {
+            fs.unlinkSync(imageFile.path);
+          }
+        } catch (unlinkError) {
+          console.warn('Warning: Could not delete temp file:', imageFile.path);
+          // Continue anyway, file will be cleaned up later
+        }
 
         optimizedFiles.images.push({
           filename: outputFilename,

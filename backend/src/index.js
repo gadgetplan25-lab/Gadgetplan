@@ -6,11 +6,13 @@ validateEnv();
 
 require("./jobs/cleanupUnverifiedUsers");
 require("./jobs/autoCompleteOrders");
+require("./jobs/cleanupTempFiles");
 const express = require('express');
 const helmet = require("helmet");
 const cors = require("cors");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const compression = require("compression"); // ✅ Gzip Compression for Performance
 
 const { generalLimiter, authLimiter, otpLimiter, checkoutLimiter, uploadLimiter, webhookLimiter } = require('./middleware/rateLimiter');
 
@@ -27,6 +29,7 @@ const colorRoutes = require("./routes/colorRoutes");
 const storageRoutes = require("./routes/storageRoutes");
 const wishlistReviewRoutes = require("./routes/wishlistReviewRoutes");
 const variantRoutes = require("./routes/variantRoutes");
+const tradeInTemplateRoutes = require("./routes/tradeInTemplateRoutes");
 
 
 const app = express();
@@ -38,6 +41,8 @@ app.set('trust proxy', 1);
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allow CORS
 }));
+
+app.use(compression()); // ✅ Enable Gzip Compression
 
 // Apply CORS globally before other routes
 app.use(cors({
@@ -154,6 +159,8 @@ app.use("/api/colors", colorRoutes);
 app.use("/api/storages", storageRoutes);
 app.use("/api/user", wishlistReviewRoutes);
 app.use("/api/variants", variantRoutes);
+app.use("/api/trade-in", tradeInTemplateRoutes);
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

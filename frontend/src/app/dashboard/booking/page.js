@@ -36,7 +36,7 @@ export default function BookingsPage() {
       const data = await apiFetch("/admin/bookings");
       setBookings(data.bookings || []);
     } catch (err) {
-      console.error("❌ Gagal fetch bookings:", err);
+      console.error("Gagal fetch bookings:", err);
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,9 @@ export default function BookingsPage() {
 
   const handleUpdateStatus = async (id, status) => {
     try {
-      await apiFetch(`/booking/${id}/status/booking`, {
+      const response = await apiFetch(`/admin/booking/${id}/status/booking`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
 
@@ -66,14 +67,16 @@ export default function BookingsPage() {
       fetchBookings();
       setIsModalOpen(false);
     } catch (err) {
-      Swal.fire("Error", "Gagal update status", "error");
+      console.error('Update status error:', err);
+      Swal.fire("Error", err.message || "Gagal update status", "error");
     }
   };
 
   const handleUpdatePaymentStatus = async (id, status) => {
     try {
-      await apiFetch(`/booking/${id}/status/payment`, {
+      await apiFetch(`/admin/booking/${id}/status/payment`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
 
@@ -159,7 +162,7 @@ export default function BookingsPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+            <div className="p-3 bg-[#002B50]/5 text-[#002B50] rounded-xl">
               <CalendarDays size={24} strokeWidth={2.5} />
             </div>
             <div>
@@ -169,7 +172,7 @@ export default function BookingsPage() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-slate-100 text-slate-600 rounded-xl">
+            <div className="p-3 bg-[#002B50]/5 text-[#002B50] rounded-xl">
               <Hourglass size={24} strokeWidth={2.5} />
             </div>
             <div>
@@ -179,7 +182,7 @@ export default function BookingsPage() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-orange-50 text-orange-600 rounded-xl">
+            <div className="p-3 bg-[#002B50]/5 text-[#002B50] rounded-xl">
               <PlayCircle size={24} strokeWidth={2.5} />
             </div>
             <div>
@@ -189,7 +192,7 @@ export default function BookingsPage() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="p-3 bg-[#002B50] text-white rounded-xl">
+            <div className="p-3 bg-[#002B50]/5 text-[#002B50] rounded-xl">
               <CheckCircle2 size={24} strokeWidth={2.5} />
             </div>
             <div>

@@ -131,14 +131,19 @@ exports.checkout = async (req, res) => {
   try {
     const user_id = req.user.id;
     const user_email = req.user.email;
-    const { cart_item_ids, payment_method, shipping_cost, shipping_detail } = req.body;
+    const { cart_item_ids, payment_method } = req.body;
+
+    console.log("🛒 Checkout request:", { user_id, cart_item_ids, payment_method });
 
     if (!cart_item_ids || cart_item_ids.length === 0) {
       return res.status(400).json({ message: "Tidak ada item yang dipilih" });
     }
 
     const cart = await Cart.findOne({ where: { user_id } });
-    if (!cart) return res.status(404).json({ message: "Keranjang tidak ditemukan" });
+    if (!cart) {
+      console.log("❌ Cart not found for user:", user_id);
+      return res.status(404).json({ message: "Keranjang tidak ditemukan" });
+    }
 
     const cartItems = await CartItem.findAll({
       where: { id: cart_item_ids, cart_id: cart.id },
@@ -156,7 +161,12 @@ exports.checkout = async (req, res) => {
       lock: true, // lock row
     });
 
-    if (cartItems.length === 0) return res.status(404).json({ message: "Item tidak ditemukan di keranjang" });
+    console.log("📦 Cart items found:", cartItems.length);
+
+    if (cartItems.length === 0) {
+      console.log("❌ No cart items found");
+      return res.status(404).json({ message: "Item tidak ditemukan di keranjang" });
+    }
 
     let totalPrice = 0;
     for (const item of cartItems) {
@@ -168,13 +178,17 @@ exports.checkout = async (req, res) => {
         const variantInfo = item.ProductVariant
           ? ` (${item.ProductVariant.Color?.name || ''} ${item.ProductVariant.Storage?.name || ''})`.trim()
           : '';
-        throw new Error(`Stok produk ${productName}${variantInfo} tidak cukup`);
+        const errorMsg = `Stok produk ${productName}${variantInfo} tidak cukup`;
+        console.log("❌ Stock error:", errorMsg);
+        throw new Error(errorMsg);
       }
 
       // Use variant price if exists, otherwise use product price
       const price = item.ProductVariant ? item.ProductVariant.price : item.Product.price;
       totalPrice += item.quantity * price;
     }
+
+    console.log("💰 Total price:", totalPrice);
 
 
 
@@ -187,6 +201,8 @@ exports.checkout = async (req, res) => {
       payment_method,
       // shipping_cost & detail dihapus (manual by admin)
     }, { transaction: t });
+
+    console.log("✅ Order created:", order.id);
 
     // Buat order item + update stok
     for (const item of cartItems) {
@@ -209,10 +225,12 @@ exports.checkout = async (req, res) => {
         // Update variant stock
         item.ProductVariant.stock -= item.quantity;
         await item.ProductVariant.save({ transaction: t });
+        console.log(`📉 Variant stock updated: ${item.ProductVariant.id}`);
       } else {
         // Update product stock
         item.Product.stock -= item.quantity;
         await item.Product.save({ transaction: t });
+        console.log(`📉 Product stock updated: ${item.Product.id}`);
       }
     }
 
@@ -222,7 +240,10 @@ exports.checkout = async (req, res) => {
       transaction: t,
     });
 
+    console.log("🗑️ Cart items removed");
+
     await t.commit();
+    console.log("✅ Transaction committed");
 
     // --- XENDIT CODE REMOVED FOR WHATSAPP MANUAL FLOW ---
 
@@ -234,6 +255,8 @@ exports.checkout = async (req, res) => {
       status: "pending",
       method: payment_method || "whatsapp",
     });
+
+    console.log("💳 Payment record created");
 
     // --- Fonnte Notification Removed ---
     // User will manually chat admin from frontend

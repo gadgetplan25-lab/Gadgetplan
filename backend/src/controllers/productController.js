@@ -4,92 +4,147 @@ const path = require("path");
 const { Op } = require("sequelize");
 const fs = require("fs");
 
-
+// ✅ NEW: All-in-One Product Creation with Variants
 exports.addProduct = async (req, res) => {
+  const t = await Product.sequelize.transaction();
+
   try {
     const {
-      name, description, price, stock, category_id,
-      tagIds = [], newTags = [],
-      colorIds = [], newColors = [],
-      storageIds = [], newStorages = []
+      name, description, category_id,
+      tag_ids, // JSON string array of tag IDs
+      variants // JSON string array of variant objects: [{color_id, storage_id, price, stock}]
     } = req.body;
 
-    // Buat product
+    console.log("📦 Creating product:", { name, category_id });
+
+    // Validate required fields
+    if (!name || !category_id) {
+      await t.rollback();
+      return res.status(400).json({ message: "Nama produk dan kategori wajib diisi" });
+    }
+
+    // Parse variants
+    let parsedVariants = [];
+    if (variants) {
+      try {
+        parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+      } catch (e) {
+        await t.rollback();
+        return res.status(400).json({ message: "Format variant tidak valid" });
+      }
+    }
+
+    // Validate variants
+    if (!parsedVariants || parsedVariants.length === 0) {
+      await t.rollback();
+      return res.status(400).json({ message: "Minimal harus ada 1 variant" });
+    }
+
+    // ✅ Create product (price & stock will be calculated from variants)
     const product = await Product.create({
       name,
-      description,
-      price,
-      stock,
+      description: description || "",
+      price: 0, // Will be updated to min price from variants
+      stock: 0, // Will be updated to total stock from variants
       category_id
-    });
+    }, { transaction: t });
 
-    // Simpan gambar
+    console.log("✅ Product created:", product.id);
+
+    // Save images
     if (req.files && req.files.length > 0) {
       const images = req.files.map(file => ({
         product_id: product.id,
         image_url: file.filename
       }));
-      await ProductImage.bulkCreate(images);
+      await ProductImage.bulkCreate(images, { transaction: t });
+      console.log(`✅ ${images.length} images saved`);
     }
 
     // Process Tags
-    const parsedTagIds = Array.isArray(tagIds)
-      ? tagIds.map(Number)
-      : String(tagIds).split(",").map(Number);
-
-    let newTagIds = [];
-    if (newTags.length > 0) {
-      newTagIds = await Promise.all(
-        newTags.map(async (name) => {
-          const [tag] = await Tag.findOrCreate({ where: { name }, defaults: { name } });
-          return tag.id;
-        })
-      );
+    if (tag_ids) {
+      try {
+        const parsedTagIds = typeof tag_ids === 'string' ? JSON.parse(tag_ids) : tag_ids;
+        if (Array.isArray(parsedTagIds) && parsedTagIds.length > 0) {
+          await product.setTags(parsedTagIds, { transaction: t });
+          console.log("✅ Tags associated:", parsedTagIds);
+        }
+      } catch (e) {
+        console.error("Failed to parse tag_ids:", e);
+      }
     }
 
-    const allTagIds = [...parsedTagIds, ...newTagIds].filter(Boolean);
-    if (allTagIds.length > 0) await product.setTags(allTagIds);
+    // ✅ Create variants and calculate min price & total stock
+    let minPrice = Infinity;
+    let totalStock = 0;
 
-    // Process Colors
-    const parsedColorIds = Array.isArray(colorIds)
-      ? colorIds.map(Number)
-      : colorIds ? String(colorIds).split(",").map(Number) : [];
+    for (const variant of parsedVariants) {
+      const { color_id, storage_id, price, stock } = variant;
 
-    let newColorIds = [];
-    if (newColors.length > 0) {
-      newColorIds = await Promise.all(
-        newColors.map(async (name) => {
-          const [color] = await Color.findOrCreate({ where: { name }, defaults: { name } });
-          return color.id;
-        })
-      );
+      if (!color_id || !storage_id || !price || !stock) {
+        await t.rollback();
+        return res.status(400).json({
+          message: "Setiap variant harus memiliki color_id, storage_id, price, dan stock"
+        });
+      }
+
+      const variantPrice = parseFloat(price);
+      const variantStock = parseInt(stock);
+
+      await ProductVariant.create({
+        product_id: product.id,
+        color_id: parseInt(color_id),
+        storage_id: parseInt(storage_id),
+        price: variantPrice,
+        stock: variantStock
+      }, { transaction: t });
+
+      // Track min price and total stock
+      if (variantPrice < minPrice) minPrice = variantPrice;
+      totalStock += variantStock;
     }
 
-    const allColorIds = [...parsedColorIds, ...newColorIds].filter(Boolean);
-    if (allColorIds.length > 0) await product.setColors(allColorIds);
+    // ✅ Update product with calculated price & stock
+    product.price = minPrice;
+    product.stock = totalStock;
+    await product.save({ transaction: t });
 
-    // Process Storages
-    const parsedStorageIds = Array.isArray(storageIds)
-      ? storageIds.map(Number)
-      : storageIds ? String(storageIds).split(",").map(Number) : [];
+    console.log(`✅ ${parsedVariants.length} variants created`);
+    console.log(`✅ Product price set to: ${minPrice}, stock: ${totalStock}`);
 
-    let newStorageIds = [];
-    if (newStorages.length > 0) {
-      newStorageIds = await Promise.all(
-        newStorages.map(async (name) => {
-          const [storage] = await Storage.findOrCreate({ where: { name }, defaults: { name } });
-          return storage.id;
-        })
-      );
-    }
+    await t.commit();
 
-    const allStorageIds = [...parsedStorageIds, ...newStorageIds].filter(Boolean);
-    if (allStorageIds.length > 0) await product.setStorages(allStorageIds);
+    // Fetch complete product data
+    const completeProduct = await Product.findByPk(product.id, {
+      include: [
+        { model: Tag, as: "tags", through: { attributes: [] } },
+        { model: Category, attributes: ["id", "name"] },
+        { model: ProductImage, attributes: ["id", "image_url"] },
+        {
+          model: ProductVariant,
+          as: "variants",
+          include: [
+            { model: Color, attributes: ["id", "name"] },
+            { model: Storage, attributes: ["id", "name"] }
+          ]
+        }
+      ]
+    });
 
-    res.json({ message: "Produk berhasil ditambahkan", product });
+    res.status(201).json({
+      message: "Produk dan variant berhasil ditambahkan",
+      product: completeProduct
+    });
+
   } catch (err) {
-    console.error("addProduct error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan server", error: err.message });
+    if (!t.finished) {
+      await t.rollback();
+    }
+    console.error("❌ addProduct error:", err);
+    res.status(500).json({
+      message: "Terjadi kesalahan server",
+      error: err.message
+    });
   }
 };
 
@@ -236,116 +291,6 @@ exports.deleteProduct = async (req, res) => {
 };
 
 
-exports.getProductById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const product = await Product.findByPk(id, {
-      include: [
-        { model: Tag, as: "tags", through: { attributes: [] } },
-        { model: Color, as: "colors", through: { attributes: [] } },
-        { model: Storage, as: "storages", through: { attributes: [] } },
-        { model: Category, attributes: ["id", "name"] },
-        { model: ProductImage, attributes: ["id", "image_url"] },
-        {
-          model: ProductVariant,
-          as: "variants",
-          include: [
-            { model: Color, attributes: ["id", "name"] },
-            { model: Storage, attributes: ["id", "name"] }
-          ]
-        }
-      ],
-    });
-
-    if (!product) {
-      return res.status(404).json({ message: "Produk tidak ditemukan" });
-    }
-
-    res.json({ product });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Terjadi kesalahan server" });
-  }
-};
-
-// GET products by tag
-exports.getProductsByTag = async (req, res) => {
-  try {
-    let { tagIds } = req.query;
-    if (!tagIds) {
-      return res.status(400).json({ message: "Tag ID harus diberikan" });
-    }
-
-    // ubah "1,3,5" => [1,3,5]
-    tagIds = tagIds.split(",").map((id) => parseInt(id));
-
-    const products = await Product.findAll({
-      include: [
-        {
-          model: Tag,
-          as: "tags",
-          where: { id: tagIds },
-          through: { attributes: [] },
-        },
-      ],
-    });
-
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Gagal filter produk", error: err.message });
-  }
-};
-
-// exports.filterByTags = async (req, res) => {
-//   try {
-//     let { tagIds, excludeId } = req.query;
-
-//     if (!tagIds) {
-//       return res.status(400).json({ message: "Tag IDs harus diberikan" });
-//     }
-
-//     // "5,6,7" -> [5,6,7] (integer)
-//     const tagIdsArr = String(tagIds)
-//       .split(",")
-//       .map((t) => parseInt(t))
-//       .filter((n) => !isNaN(n));
-
-//     if (tagIdsArr.length === 0) {
-//       return res.status(400).json({ message: "Tag IDs tidak valid" });
-//     }
-
-//     const whereClause = {};
-//     if (excludeId !== undefined) {
-//       const ex = parseInt(excludeId);
-//       if (!isNaN(ex)) whereClause.id = { [Op.ne]: ex };
-//     }
-
-//     const products = await Product.findAll({
-//       where: whereClause,
-//       include: [
-//         { model: ProductImage, attributes: ["id", "image_url"] },
-//         {
-//           model: Tag,
-//           as: "tags", // pastikan alias ini sesuai relasi di models/index
-//           where: { id: { [Op.in]: tagIdsArr } }, // cari produk yg punya minimal 1 tag di list
-//           through: { attributes: [] },
-//         },
-//       ],
-//       distinct: true,
-//     });
-
-//     return res.json({ products });
-//   } catch (err) {
-//     console.error("filterByTags error:", err);
-//     return res
-//       .status(500)
-//       .json({ message: "Gagal filter produk by tags", error: err.message });
-//   }
-// };
-
-
 exports.filterByTags = async (req, res) => {
   try {
     let { tagIds, excludeId } = req.query;
@@ -396,70 +341,6 @@ exports.filterByTags = async (req, res) => {
 };
 
 
-exports.getProductsByCategory = async (req, res) => {
-  try {
-    let { categoryIds } = req.query;
-    if (!categoryIds) {
-      return res.status(400).json({ message: "Category ID harus diberikan" });
-    }
-
-    categoryIds = categoryIds.split(",").map((id) => parseInt(id));
-
-    const products = await Product.findAll({
-      where: { category_id: { [Op.in]: categoryIds } },
-      include: [
-        { model: Category, as: "Category" },
-        { model: Tag, as: "tags", through: { attributes: [] } },
-        { model: ProductImage, as: "ProductImages" },
-      ],
-    });
-
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Gagal filter produk", error: err.message });
-  }
-};
-
-
-// Filter by color
-exports.filterByColor = async (req, res) => {
-  try {
-    let { colors } = req.query;
-    if (!colors) return res.status(400).json({ message: "Color harus diberikan" });
-
-    const colorArr = colors.split(",").map(c => c.trim());
-    const products = await Product.findAll({
-      where: { color: { [Op.in]: colorArr } },
-      include: [{ model: ProductImage, as: "ProductImages" }]
-    });
-
-    res.json({ products });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Gagal filter produk berdasarkan warna", error: err.message });
-  }
-};
-
-// Filter by storage
-exports.filterByStorage = async (req, res) => {
-  try {
-    let { storages } = req.query;
-    if (!storages) return res.status(400).json({ message: "Storage harus diberikan" });
-
-    const storageArr = storages.split(",").map(s => parseInt(s.trim()));
-    const products = await Product.findAll({
-      where: { storage: { [Op.in]: storageArr } },
-      include: [{ model: ProductImage, as: "ProductImages" }]
-    });
-
-    res.json({ products });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Gagal filter produk berdasarkan storage", error: err.message });
-  }
-};
-
 // GET /api/user/products/filter
 exports.filterProducts = async (req, res) => {
   try {
@@ -491,5 +372,55 @@ exports.filterProducts = async (req, res) => {
   } catch (err) {
     console.error("filterProducts error:", err);
     res.status(500).json({ message: "Gagal filter produk", error: err.message });
+  }
+};
+
+// ✅ Get single product by ID with all relations
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const productId = parseInt(id);
+    if (isNaN(productId)) {
+      return res.status(400).json({ message: "Invalid ID format" });
+    }
+
+    const product = await Product.findByPk(productId, {
+      include: [
+        { model: Category, attributes: ["id", "name"] },
+        { model: ProductImage, attributes: ["id", "image_url"] },
+        {
+          model: Tag,
+          as: "tags",
+          attributes: ["id", "name"],
+          // Removed through attributes to let Sequelize handle it
+        },
+        {
+          model: ProductVariant,
+          as: "variants",
+          attributes: ["id", "color_id", "storage_id", "price", "stock"],
+          include: [
+            { model: Color, attributes: ["id", "name"] },
+            { model: Storage, attributes: ["id", "name"] }
+          ]
+        }
+      ],
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Produk tidak ditemukan" });
+    }
+
+    // Format ProductTags for easier frontend consumption
+    const formattedProduct = product.toJSON();
+    if (formattedProduct.tags) {
+      formattedProduct.ProductTags = formattedProduct.tags.map(tag => ({
+        tag_id: tag.id
+      }));
+    }
+
+    res.json({ product: formattedProduct });
+  } catch (err) {
+    console.error("getProductById error:", err);
+    res.status(500).json({ message: "Gagal memuat produk", error: err.message });
   }
 };

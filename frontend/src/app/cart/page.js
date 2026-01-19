@@ -138,7 +138,9 @@ export default function CartPage() {
         }),
       });
 
-      if (!res || res.message !== "Checkout berhasil") throw new Error("Gagal checkout");
+      if (!res || res.message !== "Checkout berhasil") {
+        throw new Error(res?.message || "Gagal checkout");
+      }
 
       setShowModal(false);
 
@@ -179,7 +181,7 @@ export default function CartPage() {
         showCancelButton: true,
         confirmButtonText: "Lanjut ke WhatsApp",
         cancelButtonText: "Lihat Pesanan",
-        confirmButtonColor: "#065f46" // Emerald-800
+        confirmButtonColor: "#002B50" // Strict Theme
       }).then((result) => {
         if (result.isConfirmed) {
           window.open(waLink, "_blank");
@@ -189,7 +191,13 @@ export default function CartPage() {
         }
       });
     } catch (err) {
-      Swal.fire("Error", err.message, "error");
+      console.error("❌ Checkout error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Checkout Gagal",
+        text: err.message || "Terjadi kesalahan saat checkout. Silakan coba lagi.",
+        confirmButtonColor: "#002B50"
+      });
     }
   };
 
@@ -205,7 +213,7 @@ export default function CartPage() {
       />
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 bg-white rounded-xl shadow p-4 sm:p-6">
-          <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-emerald-900">
+          <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-[#002B50]">
             Keranjang Anda
           </h1>
           <div className="flex flex-col gap-3 sm:gap-4 max-h-[500px] overflow-y-auto pr-2">
@@ -215,13 +223,13 @@ export default function CartPage() {
               cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 sm:gap-4 border rounded-lg p-3 sm:p-4"
+                  className="flex items-center gap-3 sm:gap-4 border border-slate-200 rounded-lg p-3 sm:p-4"
                 >
                   <input
                     type="checkbox"
                     checked={selectedItems.includes(item.id)}
                     onChange={() => toggleSelect(item.id)}
-                    className="w-5 h-5 accent-emerald-600 flex-shrink-0"
+                    className="w-5 h-5 accent-[#002B50] flex-shrink-0"
                   />
                   <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0">
                     <Image
@@ -233,7 +241,7 @@ export default function CartPage() {
                       alt={item.Product?.name || "Product"}
                       fill
                       sizes="(max-width: 640px) 64px, 80px"
-                      className="object-cover rounded-lg border"
+                      className="object-cover rounded-lg border border-slate-200"
                       loading="lazy"
                       quality={80}
                       onError={(e) => {
@@ -243,35 +251,35 @@ export default function CartPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-sm sm:text-base md:text-lg text-gray-800 truncate">
+                    <h2 className="font-semibold text-sm sm:text-base md:text-lg text-[#002B50] truncate">
                       {item.Product?.name}
                     </h2>
                     {/* NEW: Display variant info if exists */}
                     {item.ProductVariant && (
                       <div className="flex gap-2 mt-1">
                         {item.ProductVariant.Color && (
-                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                          <span className="text-xs px-2 py-0.5 bg-white text-[#002B50] border border-[#002B50] rounded-full">
                             {item.ProductVariant.Color.name}
                           </span>
                         )}
                         {item.ProductVariant.Storage && (
-                          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                          <span className="text-xs px-2 py-0.5 bg-white text-[#002B50] border border-[#002B50] rounded-full">
                             {item.ProductVariant.Storage.name}
                           </span>
                         )}
                       </div>
                     )}
-                    <p className="text-gray-600 text-xs sm:text-sm md:text-base mt-1">
+                    <p className="text-slate-600 text-xs sm:text-sm md:text-base mt-1">
                       Rp. {(item.ProductVariant?.price || item.Product?.price).toLocaleString("id-ID")}
                     </p>
-                    <p className="text-xs sm:text-sm text-emerald-600">
+                    <p className="text-xs sm:text-sm text-[#002B50] opacity-80 mt-0.5">
                       Stock: {item.ProductVariant?.stock || item.Product?.stock}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                      className="text-slate-400 hover:text-[#002B50] p-2 hover:bg-[#002B50]/5 rounded-lg transition-colors"
                       title="Hapus dari keranjang"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -281,14 +289,14 @@ export default function CartPage() {
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="px-2 sm:px-3 py-1 sm:py-1.5 border rounded hover:bg-gray-100 text-sm sm:text-base min-w-[32px] min-h-[32px]"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 border border-slate-200 rounded hover:bg-slate-50 text-sm sm:text-base min-w-[32px] min-h-[32px] text-[#002B50]"
                       >
                         -
                       </button>
-                      <span className="font-semibold text-sm sm:text-base min-w-[24px] text-center">{item.quantity}</span>
+                      <span className="font-semibold text-sm sm:text-base min-w-[24px] text-center text-[#002B50]">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-2 sm:px-3 py-1 sm:py-1.5 border rounded hover:bg-gray-100 text-sm sm:text-base min-w-[32px] min-h-[32px]"
+                        className="px-2 sm:px-3 py-1 sm:py-1.5 border border-slate-200 rounded hover:bg-slate-50 text-sm sm:text-base min-w-[32px] min-h-[32px] text-[#002B50]"
                       >
                         +
                       </button>
@@ -299,93 +307,92 @@ export default function CartPage() {
             )}
           </div>
         </div>
-        <div className="bg-emerald-50 rounded-xl shadow p-6 h-fit">
-          <h2 className="text-lg font-bold text-emerald-900 mb-4">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 h-fit sticky top-24">
+          <h2 className="text-lg font-bold text-[#002B50] mb-4">
             Ringkasan Harga
           </h2>
-          <div className="flex justify-between mb-4">
-            <span className="text-gray-700">Total Harga</span>
-            <span className="font-bold text-gray-900">
+          <div className="flex justify-between mb-4 pb-4 border-b border-slate-100">
+            <span className="text-slate-600">Total Harga</span>
+            <span className="font-bold text-[#002B50] text-lg">
               Rp. {total.toLocaleString("id-ID")}
             </span>
           </div>
           <button
             onClick={handleOpenModal}
-            className="w-full bg-emerald-800 text-white py-2 rounded-lg hover:bg-emerald-900"
+            className="w-full bg-[#002B50] text-white py-3 rounded-xl hover:bg-[#002B50]/90 font-semibold shadow-lg shadow-blue-900/10 transition-all active:scale-[0.98]"
           >
             Check out
           </button>
         </div>
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
+            {/* Modal Body */}
             <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-4 sm:p-6 relative">
-              {/* Tombol Close */}
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl font-bold"
+                className="absolute top-3 right-3 text-slate-400 hover:text-[#002B50] text-xl font-bold transition-colors"
                 aria-label="Tutup"
                 type="button"
               >
                 ×
               </button>
-              <h2 className="text-xl font-bold mb-4">Konfirmasi Checkout</h2>
+              <h2 className="text-xl font-bold mb-4 text-[#002B50]">Konfirmasi Checkout</h2>
               <div className="mb-2">
-                <p><strong>Nama:</strong> {user?.user?.name || user?.name || "-"}</p>
-                <p><strong>Email:</strong> {user?.user?.email || user?.email || "-"}</p>
-                <label className="font-semibold mt-2 block">Alamat Pengiriman</label>
+                <p className="text-slate-700"><strong>Nama:</strong> {user?.user?.name || user?.name || "-"}</p>
+                <p className="text-slate-700"><strong>Email:</strong> {user?.user?.email || user?.email || "-"}</p>
+                <label className="font-semibold mt-2 block text-[#002B50]">Alamat Pengiriman</label>
                 <textarea
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  className="w-full border rounded-lg p-2"
+                  className="w-full border border-slate-200 rounded-lg p-2 focus:ring-1 focus:ring-[#002B50] focus:border-[#002B50] outline-none"
                   rows={2}
-                  readOnly
+                  placeholder="Masukkan alamat pengiriman lengkap..."
                 />
               </div>
-              <div className="max-h-60 overflow-y-auto mb-4">
+              <div className="max-h-60 overflow-y-auto mb-4 border-t border-b border-slate-100 py-2">
                 {selectedCartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex justify-between items-start border-b py-2"
+                    className="flex justify-between items-start py-2"
                   >
                     <div className="flex-1">
-                      <span className="font-medium">{item.Product?.name} x {item.quantity}</span>
-                      {/* NEW: Display variant in modal */}
+                      <span className="font-medium text-slate-900">{item.Product?.name} x {item.quantity}</span>
                       {item.ProductVariant && (
                         <div className="flex gap-1 mt-1">
                           {item.ProductVariant.Color && (
-                            <span className="text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">
+                            <span className="text-xs px-2 py-0.5 bg-white text-[#002B50] border border-[#002B50] rounded-full">
                               {item.ProductVariant.Color.name}
                             </span>
                           )}
                           {item.ProductVariant.Storage && (
-                            <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">
+                            <span className="text-xs px-2 py-0.5 bg-white text-[#002B50] border border-[#002B50] rounded-full">
                               {item.ProductVariant.Storage.name}
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <span className="font-semibold">
-                      Rp.{" "}
-                      {((item.ProductVariant?.price || item.Product?.price) * item.quantity).toLocaleString("id-ID")}
+                    <span className="font-semibold text-[#002B50]">
+                      Rp. {((item.ProductVariant?.price || item.Product?.price) * item.quantity).toLocaleString("id-ID")}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="mb-3">
-                <p><strong>Total Pembayaran:</strong> Rp {total.toLocaleString("id-ID")}</p>
+              <div className="mb-3 flex justify-between items-center bg-[#002B50]/5 p-3 rounded-lg">
+                <p className="font-bold text-[#002B50]">Total Pembayaran:</p>
+                <p className="font-bold text-xl text-[#002B50]">Rp {total.toLocaleString("id-ID")}</p>
               </div>
               <div className="flex gap-4 mt-4">
                 <Button
                   variant="outline"
                   onClick={() => setShowModal(false)}
-                  className="flex-1"
+                  className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50"
                 >
                   Batal
                 </Button>
                 <Button
                   onClick={handleCheckout}
-                  className="flex-1"
+                  className="flex-1 bg-[#002B50] hover:bg-[#002B50]/90 text-white"
                   disabled={selectedCartItems.length === 0 || loading}
                 >
                   Checkout

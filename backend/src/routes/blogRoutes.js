@@ -11,6 +11,7 @@ router.delete("/:id", verifyToken, isAdmin, blogController.deleteBlog);
 
 // Public
 router.get("/", blogController.getBlogs);
+router.get("/id/:id", blogController.getBlogById); // Get by ID for admin edit
 router.get("/:slug", blogController.getBlogBySlug);
 
 module.exports = router;

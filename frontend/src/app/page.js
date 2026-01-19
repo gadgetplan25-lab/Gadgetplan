@@ -9,14 +9,12 @@ import Footer from "@/components/footer";
 import ShiningText from "@/components/shiningText";
 import { getApiUrl } from "@/lib/config"; // Import helper
 
+// Force dynamic rendering to avoid build-time API calls
+export const dynamic = 'force-dynamic';
+export const revalidate = 60; // ISR: Revalidate every 60 seconds
+
 // Server-side data fetching with build-time fallback
 async function getProducts() {
-  // Skip API call during build if API is not available
-  if (process.env.SKIP_API_FETCH === 'true') {
-    console.log('⚠️ Skipping API fetch during build');
-    return [];
-  }
-
   try {
     const apiUrl = getApiUrl(); // Use robust helper
 
@@ -33,19 +31,13 @@ async function getProducts() {
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      console.warn(`⚠️ API returned ${res.status}, using empty products`);
       return [];
     }
 
     const data = await res.json();
     return data.products || [];
   } catch (error) {
-    // Suppress error during build, just log warning
-    if (error.name === 'AbortError') {
-      console.warn('⚠️ API fetch timeout, using empty products');
-    } else {
-      console.warn('⚠️ Failed to fetch products:', error.message);
-    }
+    // Return empty array on error (build-time or runtime)
     return [];
   }
 }
@@ -148,6 +140,3 @@ export default async function HomePage() {
     </>
   );
 }
-
-// Enable ISR
-export const revalidate = 60; // Revalidate every 60 seconds

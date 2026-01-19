@@ -81,37 +81,14 @@ exports.checkout = async (req, res) => {
     if (!user || !user.city_id) throw new Error("Alamat user belum lengkap (city_id kosong)");
     const destination = user.city_id;
 
-    // Berat barang (default 1kg)
-    let totalWeight = 1000;
-
-    // Gunakan ongkir dari frontend jika ada, jika tidak hitung manual
-    let shippingCost = 0;
-    let shippingDetail = null;
-
-    if (shipping_cost && shipping_detail) {
-      shippingCost = Number(shipping_cost);
-      shippingDetail = shipping_detail;
-    } else {
-      try {
-        const result = calculateShippingCost(destination, totalWeight);
-        shippingCost = result.cost;
-        shippingDetail = {
-          service: result.service,
-          estimate: result.estimate,
-          zone: result.zone,
-        };
-      } catch (err) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error("❌ Gagal hitung ongkir:", err.message);
-        }
-        shippingCost = 0;
-        shippingDetail = null;
-      }
-    }
+    // --- Manual Checkout (No Shipping Cost) ---
+    // User requested to remove all shipping calculations.
+    const shippingCost = 0;
+    const shippingDetail = null;
 
     // Buat order
     const order = await Order.create(
-      { user_id, total_price: totalPrice + shippingCost, status: "pending", shipping_cost: shippingCost },
+      { user_id, total_price: totalPrice, status: "pending" }, // Removed shipping_cost and + shippingCost
       { transaction: t }
     );
 
@@ -144,8 +121,8 @@ exports.checkout = async (req, res) => {
       message: "Checkout berhasil",
       order,
       payment,
-      shipping_cost: shippingCost,
-      shipping_detail: shippingDetail,
+      shipping_cost: 0,
+      shipping_detail: null,
       invoice_url: null, // No Xendit Invoice
       payment_type: "whatsapp"
     });

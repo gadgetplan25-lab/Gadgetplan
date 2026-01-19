@@ -10,13 +10,8 @@ const { verifyToken } = require("../middleware/authMiddleware");
 const axios = require("axios");
 
 router.get("/products", productController.getAllProducts);
-router.get("/filter/by-tag", productController.getProductsByTag);
-router.get("/products/:id", productController.getProductById);
 router.get("/products/filter/by-tags", productController.filterByTags);
-router.get("/filter/by-category", productController.getProductsByCategory);
-router.get("/products/filter/by-color", productController.filterByColor);
-router.get("/products/filter/by-storage", productController.filterByStorage);
-router.get("/products/filter", productController.filterProducts);
+router.get("/products/:id", productController.getProductById);
 
 // service types
 router.get("/service", serviceController.getAllServiceTypes);

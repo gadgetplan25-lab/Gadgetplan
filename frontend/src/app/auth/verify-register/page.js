@@ -190,20 +190,10 @@ function VerifyOtpContent() {
             Verifikasi OTP
           </h1>
           <p className="text-sm text-gray-600">
-            Masukkan kode OTP yang dikirim ke email
+            Masukkan kode yang dikirim ke
           </p>
-          <p className="text-sm font-semibold text-[#002B50] mt-2">
+          <p className="text-sm font-semibold text-[#002B50] mt-1">
             {email}
-          </p>
-        </div>
-
-        {/* Subtitle */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-[#002B50] mb-2">
-            Aktivasi Akun Kamu
-          </h2>
-          <p className="text-sm text-gray-600">
-            Silakan masukkan kode OTP untuk melanjutkan
           </p>
         </div>
 

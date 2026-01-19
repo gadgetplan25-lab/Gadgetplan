@@ -22,42 +22,28 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
 
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [storages, setStorages] = useState([]);
 
   // Selected IDs
   const [selectedTagIds, setSelectedTagIds] = useState([]);
-  const [selectedColorIds, setSelectedColorIds] = useState([]);
-  const [selectedStorageIds, setSelectedStorageIds] = useState([]);
 
   // New Items (Dynamic Creation)
   const [newTags, setNewTags] = useState([]);
-  const [newColors, setNewColors] = useState([]);
-  const [newStorages, setNewStorages] = useState([]);
 
   // UI States for adding new items
   const [showTagInput, setShowTagInput] = useState(false);
-  const [showColorInput, setShowColorInput] = useState(false);
-  const [showStorageInput, setShowStorageInput] = useState(false);
 
   const [tempTag, setTempTag] = useState("");
-  const [tempColor, setTempColor] = useState("");
-  const [tempStorage, setTempStorage] = useState("");
 
   // --- INITIAL DATA FETCH ---
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const [catData, tagData, colData, storeData] = await Promise.all([
+        const [catData, tagData] = await Promise.all([
           apiFetch("/admin/categories"),
-          apiFetch("/tags/"),
-          apiFetch("/colors/"),
-          apiFetch("/storages/")
+          apiFetch("/tags/")
         ]);
         setCategories(catData.categories || []);
         setTags(tagData.tags || []);
-        setColors(colData.colors || []);
-        setStorages(storeData.storages || []);
       } catch (err) {
         console.error("Failed to load options", err);
       }
@@ -98,9 +84,7 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
 
       // Reset new selections
       setSelectedTagIds([]);
-      setSelectedColorIds([]);
-      setSelectedStorageIds([]);
-      setNewTags([]); setNewColors([]); setNewStorages([]);
+      setNewTags([]);
       setImages([]); setPreviewUrls([]);
 
     } else {
@@ -110,11 +94,7 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
       setPreviewUrls([]);
       setExistingImages([]);
       setSelectedTagIds([]);
-      setSelectedColorIds([]);
-      setSelectedStorageIds([]);
       setNewTags([]);
-      setNewColors([]);
-      setNewStorages([]);
     }
   }, [editingProduct, isOpen]);
 
@@ -151,16 +131,6 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
       setTempTag("");
       setShowTagInput(false);
     }
-    if (type === "color" && tempColor.trim()) {
-      if (!newColors.includes(tempColor)) setNewColors([...newColors, tempColor]);
-      setTempColor("");
-      setShowColorInput(false);
-    }
-    if (type === "storage" && tempStorage.trim()) {
-      if (!newStorages.includes(tempStorage)) setNewStorages([...newStorages, tempStorage]);
-      setTempStorage("");
-      setShowStorageInput(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -172,12 +142,6 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
 
     selectedTagIds.forEach((id) => formData.append("tagIds[]", id));
     newTags.forEach((name) => formData.append("newTags[]", name));
-
-    selectedColorIds.forEach((id) => formData.append("colorIds[]", id));
-    newColors.forEach((name) => formData.append("newColors[]", name));
-
-    selectedStorageIds.forEach((id) => formData.append("storageIds[]", id));
-    newStorages.forEach((name) => formData.append("newStorages[]", name));
 
     deletedImageIds.forEach((id) => formData.append("deletedImageIds[]", id));
 
@@ -367,6 +331,8 @@ export default function ProductSidebar({ isOpen, onClose, onAdded, editingProduc
                       </div>
                     )}
                   </div>
+
+
 
                 </div>
 

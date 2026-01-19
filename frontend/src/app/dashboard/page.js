@@ -22,10 +22,30 @@ function DashboardHome() {
   }, []);
 
   const statCards = [
-    { title: "Total Users", value: stats.users, icon: Users, color: "text-[#002B50]", bg: "bg-blue-50" },
-    { title: "Total Produk", value: stats.products, icon: Package, color: "text-[#002B50]", bg: "bg-slate-100" },
-    { title: "Total Pesanan", value: stats.orders, icon: ShoppingCart, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Total Booking", value: stats.bookings, icon: Calendar, color: "text-slate-600", bg: "bg-slate-100" },
+    {
+      title: "Total Users", value:
+        stats.users, icon: Users, color:
+        "text-[#002B50]", bg:
+        "bg-[#002B50]/5"
+    },
+    {
+      title: "Total Produk", value:
+        stats.products, icon: Package,
+      color: "text-[#002B50]", bg:
+        "bg-[#002B50]/5"
+    },
+    {
+      title: "Total Pesanan", value:
+        stats.orders, icon: ShoppingCart,
+      color: "text-[#002B50]", bg:
+        "bg-[#002B50]/5"
+    },
+    {
+      title: "Total Booking", value:
+        stats.bookings, icon: Calendar,
+      color: "text-[#002B50]", bg:
+        "bg-[#002B50]/5"
+    },
   ];
 
   return (

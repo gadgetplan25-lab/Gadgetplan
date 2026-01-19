@@ -25,12 +25,6 @@ export const getProductImageUrl = (filename) => {
 // Helper untuk URL API
 export const getApiUrl = () => {
     const apiUrl = `${getBaseUrl()}/api`;
-
-    // Debug log
-    if (typeof window !== "undefined") {
-        console.log("🔗 API Endpoint:", apiUrl);
-    }
-
     return apiUrl;
 };
 

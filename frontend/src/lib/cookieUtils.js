@@ -13,5 +13,4 @@ export function clearAllCookies() {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
     }
 
-    console.log("🍪 All cookies cleared from client-side");
 }

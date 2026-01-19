@@ -136,20 +136,10 @@ export default function VerifyLoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#002B50] mb-3">
-            Verify OTP
+            Verifikasi OTP
           </h1>
           <p className="text-sm text-gray-600">
-            Enter the code sent to your email to continue
-          </p>
-        </div>
-
-        {/* Subtitle */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-semibold text-[#002B50] mb-2">
-            OTP Verification
-          </h2>
-          <p className="text-sm text-gray-600">
-            Please check your inbox and enter the verification code below
+            Masukkan kode yang dikirim ke email Anda
           </p>
         </div>
 
@@ -166,13 +156,13 @@ export default function VerifyLoginPage() {
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              One-Time Password (OTP)
+              Kode OTP
             </label>
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter your 6-digit OTP code"
+              placeholder="Masukkan 6 digit kode OTP"
               className="block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 text-center tracking-widest text-lg font-semibold placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002B50] focus:border-transparent transition-all"
               required
               maxLength={6}
@@ -184,7 +174,7 @@ export default function VerifyLoginPage() {
             disabled={loading}
             className="w-full bg-[#002B50] text-white py-3.5 rounded-lg font-medium hover:bg-[#003b6e] transition disabled:opacity-70"
           >
-            {loading ? "Verifying..." : "Verify OTP →"}
+            {loading ? "Memverifikasi..." : "Verifikasi OTP →"}
           </button>
         </form>
 

@@ -243,30 +243,58 @@ exports.completeOrder = async (req, res) => {
 
 // User batalkan pesanan (hanya jika belum dikirim)
 exports.cancelOrder = async (req, res) => {
+  const t = await Order.sequelize.transaction();
+
   try {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const order = await Order.findOne({ where: { id, user_id: userId } });
-    if (!order) return res.status(404).json({ message: "Order tidak ditemukan" });
+    const order = await Order.findOne({
+      where: { id, user_id: userId },
+      include: [{ model: OrderItem }],
+      transaction: t
+    });
+
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({ message: "Order tidak ditemukan" });
+    }
 
     // ✅ Tidak bisa cancel jika sudah shipped, completed, atau cancelled
     if (["shipped", "completed", "cancelled"].includes(order.status)) {
+      await t.rollback();
       return res.status(400).json({
         message: "Pesanan tidak bisa dibatalkan",
         currentStatus: order.status
       });
     }
 
+    // ✅ RESTORE STOCK - Kembalikan stok produk
+    for (const item of order.OrderItems) {
+      const product = await Product.findByPk(item.product_id, { transaction: t });
+      if (product) {
+        // Tambahkan kembali stok yang sudah dikurangi saat checkout
+        product.stock += item.quantity;
+        await product.save({ transaction: t });
+        console.log(`✅ Stock restored for product ${product.name}: +${item.quantity} (new stock: ${product.stock})`);
+      }
+    }
+
+    // Update status order menjadi cancelled
     order.status = "cancelled";
-    await order.save();
+    await order.save({ transaction: t });
+
+    await t.commit();
 
     res.json({
       success: true,
-      message: "Pesanan berhasil dibatalkan",
+      message: "Pesanan berhasil dibatalkan dan stok dikembalikan",
       order
     });
   } catch (err) {
+    if (!t.finished) {
+      await t.rollback();
+    }
     console.error("❌ Gagal batalkan pesanan:", err);
     res.status(500).json({ message: "Terjadi kesalahan server" });
   }

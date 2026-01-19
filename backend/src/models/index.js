@@ -27,6 +27,8 @@ const Wishlist = require("./wishlist"); // Fixed: was ./Wishlist
 const ProductReview = require("./productReview"); // Fixed: was ./ProductReview
 const ProductStorage = require("./productStorage");
 const ProductVariant = require("./productVariant");
+const TradeInTemplate = require("./tradeInTemplate");
+const TradeInPhone = require("./tradeInPhone");
 
 
 Product.belongsToMany(Tag, { through: ProductTag, foreignKey: "productId", as: "tags" });
@@ -68,7 +70,8 @@ const models = {
   User, Category, Product, ProductImage, Order, OrderItem,
   Payment, Technician, Booking, BookingPayment, ServiceType,
   Cart, CartItem, Otp, Device, Blog, BlogContent, Tag, ProductTag, Color, Storage,
-  ProductColor, ProductStorage, Wishlist, ProductReview, ProductVariant
+  ProductColor, ProductStorage, Wishlist, ProductReview, ProductVariant,
+  TradeInTemplate, TradeInPhone
 };
 
 
@@ -77,6 +80,11 @@ Object.keys(models).forEach((modelName) => {
     models[modelName].associate(models);
   }
 });
+
+// Trade-In Template relations
+TradeInPhone.belongsTo(TradeInTemplate, { foreignKey: 'template_id', as: 'template' });
+TradeInTemplate.hasMany(TradeInPhone, { foreignKey: 'template_id', as: 'phones' });
+
 
 (async () => {
   try {

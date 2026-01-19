@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import Swal from "sweetalert2";
 
 const statusList = [
   { label: "Menunggu Pembayaran", key: "waiting", color: "#F1F5F9" },
@@ -160,6 +161,45 @@ function PesananSayaContent() {
     } catch (error) {
       console.error("Error completing order:", error);
       alert("Gagal menyelesaikan pesanan. Silakan coba lagi.");
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    const result = await Swal.fire({
+      title: "Batalkan Pesanan?",
+      text: "Apakah Anda yakin ingin membatalkan pesanan ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Batalkan",
+      cancelButtonText: "Tidak"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiFetch(`/user/orders/${orderId}/cancel`, {
+        method: "PUT",
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Pesanan Dibatalkan",
+        text: "Pesanan berhasil dibatalkan.",
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      fetchAllData();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Membatalkan",
+        text: error.message || "Gagal membatalkan pesanan. Silakan coba lagi.",
+        confirmButtonColor: "#dc2626"
+      });
     }
   };
 
@@ -340,9 +380,6 @@ function PesananSayaContent() {
                       </div>
                     ))}
                   </div>
-                  <div className="text-[#5B6B7E] text-[15px] mb-[10px]">
-                    {item.User?.address || "-"}
-                  </div>
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                     <div className="flex gap-2 flex-wrap">
                       {/* Tombol Bayar Sekarang untuk order */}
@@ -364,6 +401,15 @@ function PesananSayaContent() {
                           className="border border-[#10B981] bg-[#10B981] text-white rounded-[8px] px-4 py-2 font-semibold hover:bg-[#059669] transition"
                         >
                           Selesai
+                        </button>
+                      )}
+                      {/* Tombol Batal untuk order yang masih waiting atau processed */}
+                      {(item.mappedStatus === "waiting" || item.mappedStatus === "processed") && (
+                        <button
+                          onClick={() => handleCancelOrder(item.id)}
+                          className="border border-red-500 bg-red-500 text-white rounded-[8px] px-4 py-2 font-semibold hover:bg-red-600 transition"
+                        >
+                          Batalkan
                         </button>
                       )}
                       <button onClick={() => handleViewDetail(item)} className="border border-[#E3E8EF] rounded-[8px] px-4 py-2 text-[#1A3558] font-semibold hover:bg-[#F1F5F9] transition">Detail</button>
@@ -421,7 +467,7 @@ function PesananSayaContent() {
             )
           )}
         </div>
-      </div>
+      </div >
       <Footer />
     </>
   );

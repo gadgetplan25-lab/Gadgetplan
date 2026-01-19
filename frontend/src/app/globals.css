@@ -263,6 +263,7 @@
   from {
     background-position: 0 0;
   }
+
   to {
     background-position: -200% 0;
   }
@@ -271,6 +272,21 @@
 .animate-text-shimmer {
   animation: shimmer 3s linear infinite;
 }
+
+@keyframes shine {
+  from {
+    background-position: 200% center;
+  }
+
+  to {
+    background-position: -200% center;
+  }
+}
+
+.animate-shine {
+  animation: shine 3s linear infinite;
+}
+
 
 /* Hide scrollbar for horizontal scroll */
 .scrollbar-hide {
@@ -366,4 +382,23 @@ select:focus-visible {
   overflow: visible;
   clip: auto;
   white-space: normal;
+}
+
+/* ==========================================
+   SWEETALERT2 CUSTOM STYLES
+   ========================================== */
+
+/* Custom loader color - Brand Blue #002B50 */
+.swal2-loader {
+  border-color: #002B50 transparent #002B50 transparent !important;
+}
+
+/* Alternative: If using icon loader */
+.swal2-icon.swal2-info {
+  border-color: #002B50 !important;
+  color: #002B50 !important;
+}
+
+.swal2-icon.swal2-info [class^='swal2-icon-content'] {
+  color: #002B50 !important;
 }

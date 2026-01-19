@@ -24,8 +24,6 @@ export default function LoginPage() {
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -37,12 +35,12 @@ export default function LoginPage() {
       });
 
       if (process.env.NODE_ENV === 'development') {
-        console.log("Login response:", res);
+
       }
 
       if (res?.message?.toLowerCase().includes("berhasil")) {
         if (process.env.NODE_ENV === 'development') {
-          console.log("User role:", res.user?.role);
+
         }
 
         Swal.fire({
@@ -111,8 +109,6 @@ export default function LoginPage() {
             <ShiningText text="GadgetPlan" duration={6} className="font-extrabold" />
           </h2>
 
-
-
           {/* Subtitle */}
           <p className="text-base md:text-lg lg:text-xl text-[#002B50] font-medium max-w-lg leading-relaxed text-center mt-6">
             Toko & Service iPhone Premium Terpercaya
@@ -126,8 +122,8 @@ export default function LoginPage() {
         {loading && (
           <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
-              <span className="text-sm font-semibold text-blue-600">Loading...</span>
+              <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#002B50] border-t-transparent"></div>
+              <span className="text-sm font-semibold text-[#002B50]">Memverifikasi...</span>
             </div>
           </div>
         )}
@@ -169,7 +165,7 @@ export default function LoginPage() {
                   placeholder="name@example.com"
                   value={form.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002B50] focus:border-transparent transition-all"
                   required
                 />
               </div>
@@ -191,13 +187,11 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={form.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#002B50] focus:border-transparent transition-all"
                   required
                 />
               </div>
             </div>
-
-
 
             {/* Submit Button */}
             <button

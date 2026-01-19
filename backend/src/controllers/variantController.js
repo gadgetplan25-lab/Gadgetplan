@@ -21,15 +21,18 @@ exports.getProductVariants = async (req, res) => {
     }
 };
 
-// Add variant to product
+// ✅ UPDATED: Add variant to product with auto-update product price & stock
 exports.addVariant = async (req, res) => {
+    const t = await ProductVariant.sequelize.transaction();
+
     try {
         const { productId } = req.params;
         const { color_id, storage_id, price, stock, sku } = req.body;
 
         // Validate product exists
-        const product = await Product.findByPk(productId);
+        const product = await Product.findByPk(productId, { transaction: t });
         if (!product) {
+            await t.rollback();
             return res.status(404).json({ message: "Produk tidak ditemukan" });
         }
 
@@ -39,10 +42,12 @@ exports.addVariant = async (req, res) => {
                 product_id: productId,
                 color_id: color_id || null,
                 storage_id: storage_id || null
-            }
+            },
+            transaction: t
         });
 
         if (existing) {
+            await t.rollback();
             return res.status(400).json({ message: "Variant dengan kombinasi ini sudah ada" });
         }
 
@@ -54,7 +59,30 @@ exports.addVariant = async (req, res) => {
             price,
             stock,
             sku: sku || null
+        }, { transaction: t });
+
+        // ✅ AUTO-UPDATE: Recalculate product price & stock
+        const allVariants = await ProductVariant.findAll({
+            where: { product_id: productId },
+            transaction: t
         });
+
+        let minPrice = Infinity;
+        let totalStock = 0;
+
+        for (const v of allVariants) {
+            if (v.price < minPrice) minPrice = v.price;
+            totalStock += v.stock;
+        }
+
+        // Update product
+        product.price = minPrice;
+        product.stock = totalStock;
+        await product.save({ transaction: t });
+
+        console.log(`✅ Product #${productId} updated: price=${minPrice}, stock=${totalStock}`);
+
+        await t.commit();
 
         // Fetch with relations
         const createdVariant = await ProductVariant.findByPk(variant.id, {
@@ -65,23 +93,29 @@ exports.addVariant = async (req, res) => {
         });
 
         res.status(201).json({
-            message: "Variant berhasil ditambahkan",
+            message: "Variant berhasil ditambahkan dan stok produk diperbarui",
             variant: createdVariant
         });
     } catch (err) {
+        if (!t.finished) {
+            await t.rollback();
+        }
         console.error("Error adding variant:", err);
         res.status(500).json({ message: "Gagal menambahkan variant", error: err.message });
     }
 };
 
-// Update variant
+// ✅ UPDATED: Update variant with auto-update product price & stock
 exports.updateVariant = async (req, res) => {
+    const t = await ProductVariant.sequelize.transaction();
+
     try {
         const { variantId } = req.params;
         const { color_id, storage_id, price, stock, sku } = req.body;
 
-        const variant = await ProductVariant.findByPk(variantId);
+        const variant = await ProductVariant.findByPk(variantId, { transaction: t });
         if (!variant) {
+            await t.rollback();
             return res.status(404).json({ message: "Variant tidak ditemukan" });
         }
 
@@ -93,22 +127,48 @@ exports.updateVariant = async (req, res) => {
                     color_id: color_id !== undefined ? color_id : variant.color_id,
                     storage_id: storage_id !== undefined ? storage_id : variant.storage_id,
                     id: { [require('sequelize').Op.ne]: variantId }
-                }
+                },
+                transaction: t
             });
 
             if (existing) {
+                await t.rollback();
                 return res.status(400).json({ message: "Variant dengan kombinasi ini sudah ada" });
             }
         }
 
-        // Update
+        // Update variant
         await variant.update({
             color_id: color_id !== undefined ? color_id : variant.color_id,
             storage_id: storage_id !== undefined ? storage_id : variant.storage_id,
             price: price !== undefined ? price : variant.price,
             stock: stock !== undefined ? stock : variant.stock,
             sku: sku !== undefined ? sku : variant.sku
+        }, { transaction: t });
+
+        // ✅ AUTO-UPDATE: Recalculate product price & stock
+        const allVariants = await ProductVariant.findAll({
+            where: { product_id: variant.product_id },
+            transaction: t
         });
+
+        let minPrice = Infinity;
+        let totalStock = 0;
+
+        for (const v of allVariants) {
+            if (v.price < minPrice) minPrice = v.price;
+            totalStock += v.stock;
+        }
+
+        // Update product
+        const product = await Product.findByPk(variant.product_id, { transaction: t });
+        product.price = minPrice;
+        product.stock = totalStock;
+        await product.save({ transaction: t });
+
+        console.log(`✅ Product #${variant.product_id} updated: price=${minPrice}, stock=${totalStock}`);
+
+        await t.commit();
 
         // Fetch updated with relations
         const updated = await ProductVariant.findByPk(variantId, {
@@ -118,40 +178,87 @@ exports.updateVariant = async (req, res) => {
             ]
         });
 
-        res.json({ message: "Variant berhasil diupdate", variant: updated });
+        res.json({ message: "Variant berhasil diupdate dan stok produk diperbarui", variant: updated });
     } catch (err) {
+        if (!t.finished) {
+            await t.rollback();
+        }
         console.error("Error updating variant:", err);
         res.status(500).json({ message: "Gagal mengupdate variant", error: err.message });
     }
 };
 
-// Delete variant
+// ✅ UPDATED: Delete variant with auto-update product price & stock
 exports.deleteVariant = async (req, res) => {
+    const t = await ProductVariant.sequelize.transaction();
+
     try {
         const { variantId } = req.params;
 
-        const variant = await ProductVariant.findByPk(variantId);
+        const variant = await ProductVariant.findByPk(variantId, { transaction: t });
         if (!variant) {
+            await t.rollback();
             return res.status(404).json({ message: "Variant tidak ditemukan" });
         }
 
-        await variant.destroy();
-        res.json({ message: "Variant berhasil dihapus" });
+        const productId = variant.product_id;
+
+        // Delete variant
+        await variant.destroy({ transaction: t });
+
+        // ✅ AUTO-UPDATE: Recalculate product price & stock
+        const remainingVariants = await ProductVariant.findAll({
+            where: { product_id: productId },
+            transaction: t
+        });
+
+        const product = await Product.findByPk(productId, { transaction: t });
+
+        if (remainingVariants.length === 0) {
+            // No variants left - set to 0
+            product.price = 0;
+            product.stock = 0;
+            console.log(`⚠️ Product #${productId} has no variants left - price & stock set to 0`);
+        } else {
+            // Recalculate from remaining variants
+            let minPrice = Infinity;
+            let totalStock = 0;
+
+            for (const v of remainingVariants) {
+                if (v.price < minPrice) minPrice = v.price;
+                totalStock += v.stock;
+            }
+
+            product.price = minPrice;
+            product.stock = totalStock;
+            console.log(`✅ Product #${productId} updated: price=${minPrice}, stock=${totalStock}`);
+        }
+
+        await product.save({ transaction: t });
+        await t.commit();
+
+        res.json({ message: "Variant berhasil dihapus dan stok produk diperbarui" });
     } catch (err) {
+        if (!t.finished) {
+            await t.rollback();
+        }
         console.error("Error deleting variant:", err);
         res.status(500).json({ message: "Gagal menghapus variant", error: err.message });
     }
 };
 
-// Bulk add variants (untuk kemudahan admin)
+// ✅ UPDATED: Bulk add variants with auto-update product price & stock
 exports.bulkAddVariants = async (req, res) => {
+    const t = await ProductVariant.sequelize.transaction();
+
     try {
         const { productId } = req.params;
         const { variants } = req.body; // Array of {color_id, storage_id, price, stock}
 
         // Validate product
-        const product = await Product.findByPk(productId);
+        const product = await Product.findByPk(productId, { transaction: t });
         if (!product) {
+            await t.rollback();
             return res.status(404).json({ message: "Produk tidak ditemukan" });
         }
 
@@ -166,7 +273,8 @@ exports.bulkAddVariants = async (req, res) => {
                         product_id: productId,
                         color_id: v.color_id || null,
                         storage_id: v.storage_id || null
-                    }
+                    },
+                    transaction: t
                 });
 
                 if (existing) {
@@ -181,7 +289,7 @@ exports.bulkAddVariants = async (req, res) => {
                     price: v.price,
                     stock: v.stock,
                     sku: v.sku || null
-                });
+                }, { transaction: t });
 
                 created.push(variant);
             } catch (err) {
@@ -189,12 +297,37 @@ exports.bulkAddVariants = async (req, res) => {
             }
         }
 
+        // ✅ AUTO-UPDATE: Recalculate product price & stock
+        const allVariants = await ProductVariant.findAll({
+            where: { product_id: productId },
+            transaction: t
+        });
+
+        let minPrice = Infinity;
+        let totalStock = 0;
+
+        for (const v of allVariants) {
+            if (v.price < minPrice) minPrice = v.price;
+            totalStock += v.stock;
+        }
+
+        product.price = minPrice;
+        product.stock = totalStock;
+        await product.save({ transaction: t });
+
+        console.log(`✅ Product #${productId} updated: price=${minPrice}, stock=${totalStock}`);
+
+        await t.commit();
+
         res.status(201).json({
-            message: `${created.length} variant berhasil ditambahkan`,
+            message: `${created.length} variant berhasil ditambahkan dan stok produk diperbarui`,
             created: created.length,
             errors: errors.length > 0 ? errors : undefined
         });
     } catch (err) {
+        if (!t.finished) {
+            await t.rollback();
+        }
         console.error("Error bulk adding variants:", err);
         res.status(500).json({ message: "Gagal menambahkan variants", error: err.message });
     }

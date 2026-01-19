@@ -38,7 +38,7 @@ export default function ProfilePage() {
           setWishlistCount(res.count || 0);
         }
       })
-      .catch((err) => console.log("Wishlist count fetch failed:", err));
+      .catch((err) => { });
 
     // Fetch orders count
     apiFetch("/user/orders")
@@ -51,7 +51,7 @@ export default function ProfilePage() {
           setCompletedOrdersCount(completedOrders.length);
         }
       })
-      .catch((err) => console.log("Orders fetch failed:", err));
+      .catch((err) => { });
   }, []);
 
   const handleEdit = () => setEditMode(true);

@@ -25,6 +25,7 @@ router.put("/user/:id/role", verifyToken, verifyAdmin, adminController.updateUse
 router.delete("/user/:id", verifyToken, verifyAdmin, adminController.deleteUser);
 
 // Products
+router.get("/product/:id", verifyToken, verifyAdmin, productController.getProductById);
 router.put("/product/:id", verifyToken, verifyAdmin, upload.array("images", 10), productController.updateProduct);
 router.post("/product", verifyToken, verifyAdmin, upload.array("images", 10), productController.addProduct);
 router.get("/products", verifyToken, verifyAdmin, productController.getAllProducts);
@@ -52,6 +53,12 @@ router.delete("/technician/:id", verifyToken, verifyAdmin, technicianController.
 router.get("/bookings", verifyToken, verifyAdmin, adminController.getAllBookings);
 router.get("/orders", verifyToken, verifyAdmin, adminController.getAllOrders);
 router.put("/orders/:id/status", verifyToken, verifyAdmin, adminController.updateOrderStatus);
+router.delete("/orders/:id", verifyToken, verifyAdmin, adminController.deleteOrder);
+
+// Booking status management for admin
+const bookingController = require("../controllers/bookingController");
+router.put("/booking/:id/status/booking", verifyToken, verifyAdmin, bookingController.updateBookingStatus);
+router.put("/booking/:id/status/payment", verifyToken, verifyAdmin, bookingController.updatePaymentStatus);
 
 router.get("/dashboard/orders", verifyToken, verifyAdmin, adminController.getDashboardOrders);
 router.get("/dashboard/bookings", verifyToken, verifyAdmin, adminController.getDashboardBookings);

@@ -44,13 +44,15 @@ export default function CreateBlogPage() {
       formData.append("title", title);
       formData.append("content", JSON.stringify([{ type: "html", value: content }]));
 
+      // Backend expects banner as array in req.files.banner[0]
       if (banner) {
         formData.append("banner", banner);
       }
 
       await apiFetch("/blogs", {
         method: "POST",
-        body: formData
+        body: formData,
+        // Don't set Content-Type header, let browser set it with boundary for multipart/form-data
       });
 
       Swal.fire({
@@ -62,7 +64,7 @@ export default function CreateBlogPage() {
       }).then(() => router.push("/dashboard/blog"));
 
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       Swal.fire("Gagal!", err.message || "Blog gagal dibuat", "error");
     } finally {
       setLoading(false);
@@ -202,9 +204,7 @@ export default function CreateBlogPage() {
                 style={{ height: '400px', marginBottom: '50px' }}
               />
             </div>
-            <p className="text-xs text-slate-400 mt-3">
-              💡 Tips: Gunakan heading untuk struktur artikel yang baik, tambahkan gambar untuk memperkaya konten
-            </p>
+
           </div>
         </form>
       </div>
@@ -220,6 +220,17 @@ export default function CreateBlogPage() {
         .quill-editor-wrapper .ql-editor.ql-blank::before {
           color: #cbd5e1;
           font-style: normal;
+        }
+        /* Fix for black line next to images */
+        .quill-editor-wrapper .ql-editor img {
+          display: block;
+          max-width: 100%;
+          height: auto;
+          margin: 1rem 0;
+        }
+        /* Remove cursor from image container */
+        .quill-editor-wrapper .ql-editor p:has(img) {
+          line-height: 0;
         }
       `}</style>
     </div>

@@ -1,19 +1,21 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { getProductImageUrl } from "@/lib/config";
 import ProductSidebar from "./ProductSidebar";
 import ProductForm from "./ProductForm";
-import ProductVariants from "@/components/ProductVariants";
-import MasterDataModal from "@/components/MasterDataModal";
+
 import Swal from "sweetalert2";
 import {
   Plus, Search, Filter, Trash2, Edit, Package,
   Tag, BarChart3, MoreHorizontal, Image as ImageIcon,
-  LayoutGrid, List as ListIcon, AlertCircle, Layers
+  LayoutGrid, List as ListIcon, AlertCircle, Layers, X
 } from "lucide-react";
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,9 +28,10 @@ export default function ProductsPage() {
   // Sidebar / Modal State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null); // If null, it's Add Mode
-  const [variantsProductId, setVariantsProductId] = useState(null); // For variants modal
-  const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 }); // NEW: Track modal position
-  const [isMasterDataOpen, setIsMasterDataOpen] = useState(false); // NEW: Master data modal
+
+  // Category Panel State
+  const [isCategoryPanelOpen, setIsCategoryPanelOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   // --- FETCH DATA ---
   const fetchData = async () => {
@@ -101,10 +104,107 @@ export default function ProductsPage() {
     setIsSidebarOpen(true);
   };
 
-  const openEditModal = (product) => {
-    setEditingProduct(product);
-    setIsSidebarOpen(true);
+  // Category handlers
+  const handleAddCategory = async () => {
+    const { value: categoryName } = await Swal.fire({
+      title: 'Tambah Kategori Baru',
+      input: 'text',
+      inputLabel: 'Nama Kategori',
+      inputPlaceholder: 'Contoh: iPhone',
+      showCancelButton: true,
+      confirmButtonText: 'Tambah',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#002B50',
+      inputValidator: (value) => {
+        if (!value) return 'Nama kategori tidak boleh kosong!';
+      }
+    });
+
+    if (categoryName) {
+      try {
+        await apiFetch("/admin/category", {
+          method: "POST",
+          body: JSON.stringify({ name: categoryName }),
+        });
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: `Kategori "${categoryName}" berhasil ditambahkan`,
+          timer: 1500,
+          showConfirmButton: false
+        });
+        fetchData();
+      } catch (error) {
+        Swal.fire("Error", error.message || "Gagal menambahkan kategori", "error");
+      }
+    }
   };
+
+  const handleEditCategory = async (category) => {
+    const { value: categoryName } = await Swal.fire({
+      title: 'Edit Kategori',
+      input: 'text',
+      inputLabel: 'Nama Kategori',
+      inputValue: category.name,
+      showCancelButton: true,
+      confirmButtonText: 'Simpan',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#002B50',
+      inputValidator: (value) => {
+        if (!value) return 'Nama kategori tidak boleh kosong!';
+      }
+    });
+
+    if (categoryName && categoryName !== category.name) {
+      try {
+        await apiFetch(`/admin/category/${category.id}`, {
+          method: "PUT",
+          body: JSON.stringify({ name: categoryName }),
+        });
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Kategori berhasil diupdate',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        fetchData();
+      } catch (error) {
+        Swal.fire("Error", error.message || "Gagal mengupdate kategori", "error");
+      }
+    }
+  };
+
+  const handleDeleteCategory = async (category) => {
+    const result = await Swal.fire({
+      title: 'Hapus Kategori?',
+      text: `Kategori "${category.name}" akan dihapus. Produk dengan kategori ini akan kehilangan kategorinya.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await apiFetch(`/admin/category/${category.id}`, { method: "DELETE" });
+        Swal.fire({
+          icon: 'success',
+          title: 'Terhapus!',
+          text: 'Kategori berhasil dihapus',
+          timer: 1500,
+          showConfirmButton: false
+        });
+        fetchData();
+      } catch (error) {
+        Swal.fire("Error", error.message || "Gagal menghapus kategori", "error");
+      }
+    }
+  };
+
+
 
   // --- COMPONENTS ---
   const StatusBadge = ({ stock }) => {
@@ -123,12 +223,20 @@ export default function ProductsPage() {
             <h1 className="text-3xl font-bold text-[#002B50] tracking-tight">Manajemen Produk</h1>
             <p className="text-slate-500 mt-1">Kelola katalog produk, stok, dan kategori.</p>
           </div>
-          <button
-            onClick={openAddModal}
-            className="bg-[#002B50] hover:bg-[#002B50]/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/10 flex items-center gap-2 transition-all active:scale-95"
-          >
-            <Plus size={20} /> Tambah Produk
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsCategoryPanelOpen(true)}
+              className="bg-white hover:bg-slate-50 text-[#002B50] px-5 py-2.5 rounded-xl font-bold border-2 border-[#002B50] flex items-center gap-2 transition-all active:scale-95 justify-center"
+            >
+              <Layers size={20} /> Kelola Kategori
+            </button>
+            <Link
+              href="/dashboard/product/create"
+              className="bg-[#002B50] hover:bg-[#002B50]/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/10 flex items-center gap-2 transition-all active:scale-95 justify-center"
+            >
+              <Plus size={20} /> Tambah Produk
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -174,31 +282,6 @@ export default function ProductsPage() {
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-          </div>
-
-          {/* Master Data Button */}
-          <button
-            onClick={() => setIsMasterDataOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#002B50] hover:bg-[#003d73] text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all"
-          >
-            <Package size={18} />
-            <span className="hidden sm:inline">Master Data</span>
-          </button>
-
-          {/* View Toggles */}
-          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-            <button
-              onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-white text-[#002B50] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              <ListIcon size={18} />
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-[#002B50] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-            >
-              <LayoutGrid size={18} />
-            </button>
           </div>
 
         </div>
@@ -258,33 +341,13 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const modalWidth = 900;
-                            const viewportWidth = window.innerWidth;
-
-                            // Center modal in viewport horizontally
-                            let left = (viewportWidth - modalWidth) / 2;
-
-                            setModalPosition({
-                              top: rect.bottom + 8,
-                              left: left
-                            });
-                            setVariantsProductId(p.id);
-                          }}
-                          className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all"
-                          title="Manage Variants"
-                        >
-                          <Layers size={18} />
-                        </button>
-                        <button
-                          onClick={() => openEditModal(p)}
+                        <Link
+                          href={`/dashboard/product/edit/${p.id}`}
                           className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                           title="Edit"
                         >
                           <Edit size={18} />
-                        </button>
+                        </Link>
                         <button
                           onClick={() => handleDelete(p.id)}
                           className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -327,7 +390,7 @@ export default function ProductsPage() {
                   <div className="flex justify-between items-end">
                     <p className="text-lg font-bold text-[#002B50]">Rp {p.price.toLocaleString("id-ID")}</p>
                     <div className="flex gap-1">
-                      <button onClick={() => openEditModal(p)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"><Edit size={16} /></button>
+                      <Link href={`/dashboard/product/edit/${p.id}`} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"><Edit size={16} /></Link>
                       <button onClick={() => handleDelete(p.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100"><Trash2 size={16} /></button>
                     </div>
                   </div>
@@ -347,25 +410,90 @@ export default function ProductsPage() {
         editingProduct={editingProduct} // Need to ensure ProductSidebar handles this prop
       />
 
-      {/* Variants Modal - Dropdown Style */}
-      {variantsProductId && (
-        <div className="fixed inset-0 z-[9999]" onClick={() => setVariantsProductId(null)}>
-          <div
-            className="absolute bg-white rounded-2xl p-6 w-[900px] max-h-[85vh] overflow-y-auto shadow-2xl border border-slate-200"
-            style={{
-              top: `${modalPosition.top}px`,
-              left: `${modalPosition.left}px`
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ProductVariants
-              productId={variantsProductId}
-              onClose={() => setVariantsProductId(null)}
-            />
-            <div className="mt-6 flex justify-end">
+      {/* Category Side Panel */}
+      {isCategoryPanelOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end pointer-events-none">
+          {/* Side Panel */}
+          <div className="w-full max-w-md bg-white shadow-2xl flex flex-col h-full pointer-events-auto">
+            {/* Header */}
+            <div className="p-6 border-b border-slate-200 bg-[#002B50] text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">Kelola Kategori</h2>
+                  <p className="text-sm text-white/70 mt-1">Tambah, edit, atau hapus kategori produk</p>
+                </div>
+                <button
+                  onClick={() => setIsCategoryPanelOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Add Category Button */}
               <button
-                onClick={() => setVariantsProductId(null)}
-                className="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors"
+                onClick={handleAddCategory}
+                className="w-full bg-[#002B50] hover:bg-[#003d75] text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors mb-6"
+              >
+                <Plus size={20} />
+                Tambah Kategori Baru
+              </button>
+
+              {/* Categories List */}
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-slate-600 mb-3">
+                  Daftar Kategori ({categories.length})
+                </p>
+                {categories.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400">
+                    <Layers size={48} className="mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">Belum ada kategori</p>
+                  </div>
+                ) : (
+                  categories.map((category) => (
+                    <div
+                      key={category.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#002B50] text-white rounded-lg">
+                          <Layers size={18} />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800">{category.name}</p>
+                          <p className="text-xs text-slate-500">ID: {category.id}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-slate-200 bg-slate-50">
+              <button
+                onClick={() => setIsCategoryPanelOpen(false)}
+                className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-3 rounded-lg font-semibold transition-colors"
               >
                 Tutup
               </button>
@@ -373,12 +501,6 @@ export default function ProductsPage() {
           </div>
         </div>
       )}
-
-      {/* Master Data Modal */}
-      <MasterDataModal
-        isOpen={isMasterDataOpen}
-        onClose={() => setIsMasterDataOpen(false)}
-      />
 
     </div>
   );

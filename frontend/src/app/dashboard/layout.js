@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { LogOut, LayoutDashboard, Package, Layers, Wrench, Settings, Users, Calendar, FileText, ShoppingCart } from "lucide-react";
+import { LogOut, LayoutDashboard, Package, Layers, Wrench, Settings, Users, Calendar, FileText, ShoppingCart, RefreshCw } from "lucide-react";
 import "./dashboard.css";
 
 export default function DashboardLayout({ children }) {
@@ -16,13 +16,13 @@ export default function DashboardLayout({ children }) {
   const menus = [
     { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
     { name: "Products", path: "/dashboard/product", icon: Package },
-    { name: "Categories", path: "/dashboard/categorie", icon: Layers },
     { name: "Technicians", path: "/dashboard/technician", icon: Wrench },
     { name: "Services", path: "/dashboard/service", icon: Settings },
     { name: "Users", path: "/dashboard/user", icon: Users },
     { name: "Bookings", path: "/dashboard/booking", icon: Calendar },
     { name: "Blogs", path: "/dashboard/blog", icon: FileText },
     { name: "Orders", path: "/dashboard/order", icon: ShoppingCart },
+    { name: "Trade-In", path: "/dashboard/tradein", icon: RefreshCw },
   ];
 
   useEffect(() => {

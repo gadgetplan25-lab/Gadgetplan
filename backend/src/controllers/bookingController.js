@@ -177,13 +177,20 @@ exports.updateBookingStatus = async (req, res) => {
     const { id } = req.params; // booking id
     const { status } = req.body;
 
+    console.log('Update booking status - ID:', id, 'Status:', status);
+
     const booking = await Booking.findByPk(id);
     if (!booking) {
+      console.log('Booking not found:', id);
       return res.status(404).json({ message: "Booking tidak ditemukan" });
     }
 
+    console.log('Current booking:', booking.toJSON());
+
     booking.status = status;
     await booking.save();
+
+    console.log('Booking updated successfully');
 
     // Otomatis update status pembayaran jadi 'paid' jika status booking Confirmed/Proses/Selesai
     if (["confirmed", "proses", "selesai"].includes(status)) {
@@ -191,12 +198,13 @@ exports.updateBookingStatus = async (req, res) => {
         { payment_status: "paid" },
         { where: { booking_id: id } }
       );
+      console.log('Payment status updated to paid');
     }
 
     res.json({ message: "Status booking berhasil diperbarui", booking });
   } catch (error) {
-    console.error(" Gagal update status booking:", error);
-    res.status(500).json({ message: "Terjadi kesalahan server" });
+    console.error("❌ Gagal update status booking:", error);
+    res.status(500).json({ message: "Terjadi kesalahan server", error: error.message });
   }
 };
 // controllers/bookingController.js

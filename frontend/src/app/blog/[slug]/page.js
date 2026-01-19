@@ -8,6 +8,7 @@ import Link from "next/link";
 import Footer from "@/components/footer";
 import Image from "next/image";
 import { getBlogImageUrl, getApiUrl, getBaseUrl } from "@/lib/config";
+import Head from "next/head";
 
 export default function BlogDetailPage() {
   const { slug } = useParams();
@@ -28,6 +29,54 @@ export default function BlogDetailPage() {
         const res = await fetch(`${getApiUrl()}/blogs/${slug}`);
         const data = await res.json();
         setBlog(data);
+
+        // Update document title and meta tags
+        if (data) {
+          document.title = `${data.title} | GadgetPlan Blog`;
+
+          // Get excerpt from content
+          const excerpt = data.contents && data.contents.length > 0
+            ? data.contents
+              .filter(c => c.type === "html" || c.type === "text" || c.type === "" || !c.type)
+              .map(c => c.content || "")
+              .join("")
+              .replace(/<[^>]*>/g, '')
+              .substring(0, 160)
+            : 'Baca artikel terbaru tentang iPhone dan gadget di GadgetPlan';
+
+          // Update meta description
+          let metaDescription = document.querySelector('meta[name="description"]');
+          if (!metaDescription) {
+            metaDescription = document.createElement('meta');
+            metaDescription.name = 'description';
+            document.head.appendChild(metaDescription);
+          }
+          metaDescription.content = excerpt;
+
+          // Update Open Graph tags
+          const ogTags = [
+            { property: 'og:title', content: data.title },
+            { property: 'og:description', content: excerpt },
+            { property: 'og:image', content: `${getBaseUrl()}/public${data.banner_image}` },
+            { property: 'og:url', content: window.location.href },
+            { property: 'og:type', content: 'article' },
+            { property: 'twitter:card', content: 'summary_large_image' },
+            { property: 'twitter:title', content: data.title },
+            { property: 'twitter:description', content: excerpt },
+            { property: 'twitter:image', content: `${getBaseUrl()}/public${data.banner_image}` },
+          ];
+
+          ogTags.forEach(tag => {
+            let metaTag = document.querySelector(`meta[property="${tag.property}"]`);
+            if (!metaTag) {
+              metaTag = document.createElement('meta');
+              metaTag.setAttribute('property', tag.property);
+              document.head.appendChild(metaTag);
+            }
+            metaTag.content = tag.content;
+          });
+        }
+
         const resAll = await fetch(`${getApiUrl()}/blogs?sort=desc`);
         let allBlogs = await resAll.json();
         allBlogs = allBlogs.filter((b) => b.slug !== slug);

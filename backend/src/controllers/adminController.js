@@ -112,11 +112,11 @@ exports.getAllOrders = async (req, res) => {
           model: OrderItem,
           include: [
             { model: Product, attributes: ["id", "name", "price"] },
-            { model: Color, attributes: ["id", "name"] },
-            { model: Storage, attributes: ["id", "name"] },
+            { model: Color, attributes: ["id", "name"], required: false },
+            { model: Storage, attributes: ["id", "name"], required: false },
           ]
         },
-        { model: Payment },
+        { model: Payment, required: false },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -284,6 +284,49 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Terjadi kesalahan server" });
   }
 };
+
+// Delete order by admin
+exports.deleteOrder = async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const { id } = req.params;
+
+    const order = await Order.findByPk(id, { transaction: t });
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({ message: "Order tidak ditemukan" });
+    }
+
+    console.log(`🗑️ Admin deleting Order #${id}`);
+
+    // Delete related OrderItems first
+    await OrderItem.destroy({
+      where: { order_id: id },
+      transaction: t
+    });
+
+    // Delete related Payment
+    await Payment.destroy({
+      where: { order_id: id },
+      transaction: t
+    });
+
+    // Delete the order
+    await order.destroy({ transaction: t });
+
+    await t.commit();
+
+    res.json({
+      success: true,
+      message: "Order berhasil dihapus"
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error("❌ Gagal hapus order:", error);
+    res.status(500).json({ message: "Terjadi kesalahan server", error: error.message });
+  }
+};
+
 
 // TEMPORARY: Reset Data
 exports.resetData = async (req, res) => {

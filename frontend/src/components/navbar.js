@@ -25,29 +25,21 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("🔍 [Navbar] Checking auth for pathname:", pathname);
         const res = await apiFetch("/auth/me", { method: "GET", credentials: "include" });
 
         if (res.user) {
-          console.log("👤 [Navbar] User:", res.user.email, "| Role:", res.user.role);
           setUserData(res.user);
 
           // ✅ Auto-redirect admin ke dashboard jika akses halaman customer
           if (res.user.role === 'admin' && !pathname.startsWith('/dashboard') && !pathname.startsWith('/auth')) {
-            console.log("🚫 [Navbar] Admin on customer page → redirecting to /dashboard");
             router.push('/dashboard');
           }
           // ✅ Auto-redirect customer dari dashboard ke homepage
           else if (res.user.role === 'customer' && pathname.startsWith('/dashboard')) {
-            console.log("🚫 [Navbar] Customer on admin page → redirecting to /");
             router.push('/');
-          }
-          else {
-            console.log("✅ [Navbar] User authorized for:", pathname);
           }
         }
       } catch (error) {
-        console.log("❌ [Navbar] Auth failed:", error.message);
         setUserData(null);
       }
     };
@@ -106,7 +98,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
     try {
       await apiFetch("/auth/logout", { method: "POST", credentials: "include" });
     } catch (error) {
-      console.error("Logout API error:", error);
+      // Silent fail - API error doesn't prevent client-side logout
     } finally {
       // Force clear all cookies from client-side
       clearAllCookies();

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request) {
+export function proxy(request) {
     const { pathname } = request.nextUrl;
 
     // Allow .well-known paths (for SSL certificate verification, etc.)
@@ -12,7 +12,7 @@ export function middleware(request) {
     return NextResponse.next();
 }
 
-// Configure which paths the middleware runs on
+// Configure which paths the proxy runs on
 export const config = {
     matcher: [
         /*

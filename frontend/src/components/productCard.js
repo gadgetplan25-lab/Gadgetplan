@@ -22,7 +22,7 @@ export default function ProductCard({ products = [] }) {
               aria-label={`Lihat detail ${product.name || "Produk"}`}
             >
               {/* Gambar Produk - Optimized for mobile */}
-              <div className="w-full h-[220px] sm:h-[240px] md:h-[260px] relative flex items-center justify-center bg-gray-100">
+              <div className="w-full h-[220px] sm:h-[240px] md:h-[260px] relative flex items-center justify-center bg-white p-6">
                 {product.ProductImages?.length > 0 ? (
                   <Image
                     src={getProductImageUrl(product.ProductImages[0].image_url)}
@@ -33,8 +33,6 @@ export default function ProductCard({ products = [] }) {
                     loading={index < 4 ? "eager" : "lazy"}
                     priority={index < 4}
                     quality={index < 4 ? 80 : 70}
-                    placeholder="blur"
-                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg=="
                   />
                 ) : (
                   <span className="text-gray-400 text-xs sm:text-sm">No Image</span>
